@@ -66,4 +66,8 @@ class linearPlacesProbs:
     def __init__(self, elitism):
         self.elitism = elitism
     def __call__(self, num, pscout):
-        pass
+        a = self.elitism * (1 - pscout) * 2 / (num ** 2 - num)
+        b = (1 - pscout) / num + a * (num - 1) / 2
+        probs = -a * np.array(range(num + 1)) + b
+        probs[num] = pscout
+        return probs

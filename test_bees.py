@@ -9,7 +9,8 @@ m = im.metrics(target, stop, verbose=50)
 
 bees = im.beesAlgorithm(metrics=m, popSize=20, plNum=10, probScout=0.01)
 
-bees.opPlaceProbs = im.uniformPlacesProbs
+#bees.opPlaceProbs = im.uniformPlacesProbs
+bees.opPlaceProbs = im.linearPlacesProbs(0.9)
 
 #loc = im.realMutation(im.expCool(0.1, 0.99))
 #glob = im.fillAttribute(im.randomRealVector(target.bounds))
