@@ -1,5 +1,3 @@
-import numpy as np
+x = {'a':True, 'b':False}
 
-x = np.array(range(10))
-
-print(x)
+print('b' in x and x['b'], 'c' in x and x['c'])

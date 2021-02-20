@@ -20,19 +20,22 @@ class algorithm:
         self.__dict__.update(args)
     def addProcedure(self, proc):
         self.additionalProcedures.append(proc)
-    def start(self, envAttrs, indAttrs):
+    def start(self, envAttrs, indAttrs, shadows = ""):
         # environment
-        keys = envAttrs.split(" ")
+        keys = envAttrs.split()
         self.env = dict(zip(keys, [None] * len(keys)))
         for key in keys:
             if key in self.__dict__:
                 self.env[key] = self.__dict__[key]
         # population
-        keys = indAttrs.split(" ")
+        keys = indAttrs.split()
         ind = dict(zip(keys, [None] * len(keys)))
         self.population = [ind.copy() for i in range(self.popSize)]
         if self.opInit == None:
             self.opInit = fillAttribute(self.metrics.task.defaultInit())
+        # shadow populations
+        for sh in shadows.split():
+            self.__dict__[sh] = [ind.copy() for i in range(self.popSize)]
     def args(self, **a):
         a.update({'metrics':self.metrics, 'env':self.env})
         return a

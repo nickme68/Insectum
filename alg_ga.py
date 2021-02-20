@@ -23,56 +23,70 @@ class geneticAlgorithm(algorithm):
             self.evaluateAll()
 
 class tournament:
-    def __init__(self, pwin):
+    def __init__(self, pwin, twoway=True):
         self.pwin = pwin
+        self.twoway = twoway
     def __call__(self, pair, args):
         ind1, ind2 = pair
         key = args['key']
+        twoway = 'twoway' not in args and self.twoway or 'twoway' in args and args['twoway']
         task = args['metrics'].task
         pwin = evalf(self.pwin, [args, ind1, ind2])
         A = task.isBetter(ind1[key], ind2[key])
         B = np.random.random() < pwin
-        if A == B: # not xor
-            ind2.update(copy.deepcopy(ind1))
-        else:
+        if A != B: # xor
             ind1.update(copy.deepcopy(ind2))
+        elif twoway:
+            ind2.update(copy.deepcopy(ind1))
 
 # Crossovers
 
 class uniformCrossover:
-    def __init__(self, pswap):
+    def __init__(self, pswap, twoway=True):
         self.pswap = pswap
+        self.twoway = twoway
     def __call__(self, pair, args):
         ind1, ind2 = pair
         pswap = evalf(self.pswap, [args, ind1, ind2])
         key = args['key']
+        twoway = 'twoway' not in args and self.twoway or 'twoway' in args and args['twoway']
         dim = args['metrics'].task.dimension
         for pos in range(dim):
             if np.random.random() < pswap:
-                ind1[key][pos], ind2[key][pos] = ind2[key][pos], ind1[key][pos]
-
+                if twoway:
+                    ind1[key][pos], ind2[key][pos] = ind2[key][pos], ind1[key][pos]
+                else:
+                    ind1[key][pos] = ind2[key][pos] 
 class singlePointCrossover:
-    def __init__(self):
-        pass
+    def __init__(self, twoway=True):
+        self.twoway = twoway
     def __call__(self, pair, args):
         ind1, ind2 = pair
         key = args['key']
+        twoway = 'twoway' not in args and self.twoway or 'twoway' in args and args['twoway']
         dim = args['metrics'].task.dimension
         cpos = np.random.randint(low=1, high=dim)
         for pos in range(cpos, dim):
-            ind1[key][pos], ind2[key][pos] = ind2[key][pos], ind1[key][pos]
+            if twoway:
+                ind1[key][pos], ind2[key][pos] = ind2[key][pos], ind1[key][pos]
+            else:
+                ind1[key][pos] = ind2[key][pos]
 
 class doublePointCrossover:
-    def __init__(self):
-        pass
+    def __init__(self, twoway=True):
+        self.twoway = twoway
     def __call__(self, pair, args):
         ind1, ind2 = pair
         key = args['key']
+        twoway = 'twoway' not in args and self.twoway or 'twoway' in args and args['twoway']
         dim = args['metrics'].task.dimension
         cpos1 = np.random.randint(low=1, high=dim - 1)
         cpos2 = np.random.randint(low=cpos1, high=dim)
         for pos in range(cpos1, cpos2):
-            ind1[key][pos], ind2[key][pos] = ind2[key][pos], ind1[key][pos]
+            if twoway:
+                ind1[key][pos], ind2[key][pos] = ind2[key][pos], ind1[key][pos]
+            else:
+                ind1[key][pos] = ind2[key][pos]
 
 # Mutations (unary operator)
 

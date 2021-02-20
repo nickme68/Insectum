@@ -5,3 +5,4 @@ from alg_sa import *
 from alg_pso import *
 from alg_bfoa import *
 from alg_bees import *
+from alg_de import *
