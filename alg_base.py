@@ -48,6 +48,15 @@ class algorithm:
 
 # Common stuff
 
+class shuffled:
+    def __init__(self, op):
+        self.op = op
+    def __call__(self, population, args):
+        popSize = len(population)
+        P = list(range(popSize))
+        np.random.shuffle(P)
+        randomPairwise(population, self.op, P, args)
+
 class fillAttribute:
     def __init__(self, op):
         self.op = op

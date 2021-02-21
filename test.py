@@ -1,3 +1,5 @@
-x = {'a':True, 'b':False}
+import numpy as np
 
-print('b' in x and x['b'], 'c' in x and x['c'])
+x = list(range(5))
+
+print(np.random.choice(x, 3, True))
