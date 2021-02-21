@@ -53,3 +53,30 @@ def probesBest(ind, population, args):
     S = [i] + sampleDE(len(population), 2, [index, i])
     a, b, c = [population[i] for i in S]
     ind[keyx] = a[keyx] + weight * (b[keyx] - c[keyx])
+
+def probesCur2Best(ind, population, args):
+    keyx = args['keyx']
+    index = args['index']
+    weight = args['env']['weight']
+    i = argbestDE(population, args)
+    S = [index, i] + sampleDE(len(population), 2, [index, i])
+    cur, a, b, c = [population[i] for i in S]
+    ind[keyx] = cur[keyx] + weight * (a[keyx] - cur[keyx] + b[keyx] - c[keyx])
+
+def probesBest2(ind, population, args):
+    keyx = args['keyx']
+    index = args['index']
+    weight = args['env']['weight']
+    i = argbestDE(population, args)
+    S = [i] + sampleDE(len(population), 4, [index, i])
+    a, b, c, d, e = [population[i] for i in S]
+    ind[keyx] = a[keyx] + weight * (b[keyx] - c[keyx] + d[keyx] - e[keyx])
+
+def probesRandom5(ind, population, args):
+    keyx = args['keyx']
+    index = args['index']
+    weight = args['env']['weight']
+    S = sampleDE(len(population), 5, [index])
+    a, b, c, d, e = [population[i] for i in S]
+    ind[keyx] = a[keyx] + weight * (b[keyx] - c[keyx] + d[keyx] - e[keyx])
+

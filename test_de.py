@@ -7,7 +7,7 @@ m = im.metrics(target, stop, verbose=50)
 
 de = im.differentialEvolution(metrics=m, popSize=20, weight=0.8)
 
-de.opMakeProbes = im.probesBest #probesClassic
+de.opMakeProbes = im.probesRandom5 #probesBest2 #probesCur2Best #probesBest #probesClassic
 de.opCrossover = im.uniformCrossover(0.9)
 de.opSelect = im.tournament(1.0)
 
