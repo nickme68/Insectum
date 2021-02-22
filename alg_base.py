@@ -1,7 +1,6 @@
 import numpy as np 
 import copy
 from templates import *
-#from tasks import *
 
 def evalf(x, args):
     if callable(x):

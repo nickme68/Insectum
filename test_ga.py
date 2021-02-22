@@ -14,7 +14,7 @@ x2 = im.singlePointCrossover()
 x3 = im.doublePointCrossover()
 x = im.probOp(x1, 0.5) #im.mixture([x1, x2, x3], [0.2, 0.2, 0.2])
 ga.opCrossover = im.shuffled(x2)
-#ga.opCrossover = im.selected(x2)
+#ga.opCrossover = im.selected(x2) # TODO check it!
 
 # im.mixture(x1, 0.2)
 

@@ -1,5 +1,5 @@
 import numpy as np
 
-x = list(range(5))
+a = np.random.rand(5, 2)
 
-print(np.random.choice(x, 3, True))
+print(a)

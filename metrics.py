@@ -12,12 +12,13 @@ class metrics:
         self.currentGeneration = 0
         self.data = [[]]
         self.verbose = verbose
-    def newEval(self, ind, keyx, keyf):
-        ind[keyf] = self.task(ind[keyx])
-        self.efs += 1
-        if self.bestValue == None or self.task.isBetter(ind[keyf], self.bestValue):
-            self.bestValue = ind[keyf]
-            self.bestSolution = np.copy(ind[keyx])
+    def newEval(self, ind, keyx, keyf, reEval):
+        if reEval:
+            ind[keyf] = self.task(ind[keyx])
+            self.efs += 1
+            if self.bestValue == None or self.task.isBetter(ind[keyf], self.bestValue):
+                self.bestValue = ind[keyf]
+                self.bestSolution = np.copy(ind[keyx])
         self.data[-1].append(ind[keyf])
     def newGeneration(self):
         self.currentGeneration += 1

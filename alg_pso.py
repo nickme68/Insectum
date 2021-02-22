@@ -1,6 +1,7 @@
 from alg_base import * 
+from tasks import randomRealVector
 
-class particleSwapOptimization(algorithm):
+class particleSwarmOptimization(algorithm):
     def __init__(self, **args):
         algorithm.__init__(self)
         self.opLimitVel = None

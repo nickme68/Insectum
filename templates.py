@@ -1,13 +1,18 @@
 # functions for parallel execution
 
 import numpy as np 
+from functools import reduce
 
 def evaluate(population, args):
     metrics = args['metrics']
     keyx = args['keyx']
     keyf = args['keyf']
     for ind in population:
-        metrics.newEval(ind, keyx, keyf)
+        if 'reEval' in args:
+            reEval = ind[args['reEval']]
+        else:
+            reEval = True
+        metrics.newEval(ind, keyx, keyf, reEval)
 
 def foreach(population, op, args):
     for ind in population:
@@ -28,5 +33,8 @@ def pop2ind(population1, population2, op, args):
         a = {'index':i}
         a.update(args)
         op(ind, population2, a)
+
+def pop2env(population, keyx, op, env, keye):
+    env[keye] = reduce(op, map(lambda ind: ind[keyx], population))
 
 
