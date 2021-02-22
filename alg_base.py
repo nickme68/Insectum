@@ -48,6 +48,13 @@ class algorithm:
 
 # Common stuff
 
+def samplex(n, m, x):
+    s = []
+    for i in range(n):
+        if i not in x:
+            s.append(i)
+    return list(np.random.choice(s, m, False))
+
 class shuffled:
     def __init__(self, op):
         self.op = op
@@ -56,6 +63,25 @@ class shuffled:
         P = list(range(popSize))
         np.random.shuffle(P)
         randomPairwise(population, self.op, P, args)
+
+class selected:
+    def __init__(self, op):
+        self.op = op
+    def __call__(self, population, args):
+        if 'selector' in args['env']:
+            selector = args['env']['selector']
+        else:
+            selector = None
+        shadow = []
+        for i in range(len(population)):
+            if selector: 
+                j = selector(i)
+            else:
+                j = samplex(len(population), 1, [i])[0]
+            shadow.append(copy.deepcopy(population[j]))
+        a = {'twoway':False}
+        a.update(args)
+        pairwise(population, shadow, self.op, a)
 
 class fillAttribute:
     def __init__(self, op):

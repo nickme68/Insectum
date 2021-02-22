@@ -23,13 +23,6 @@ class differentialEvolution(algorithm):
             evaluate(self.probes, self.args(keyx='x', keyf='f'))
             pairwise(self.population, self.probes, self.opSelect, self.args(key='f', twoway=False))
 
-def sampleDE(n, m, x):
-    s = []
-    for i in range(n):
-        if i not in x:
-            s.append(i)
-    return list(np.random.choice(s, m, False))
-
 def argbestDE(population, args):
     keyf = args['keyf']
     if args['metrics'].task.getDir() == 'min':
@@ -41,7 +34,7 @@ def probesClassic(ind, population, args):
     keyx = args['keyx']
     index = args['index']
     weight = args['env']['weight']
-    S = sampleDE(len(population), 3, [index])
+    S = samplex(len(population), 3, [index])
     a, b, c = [population[i] for i in S]
     ind[keyx] = a[keyx] + weight * (b[keyx] - c[keyx])
 
@@ -50,7 +43,7 @@ def probesBest(ind, population, args):
     index = args['index']
     weight = args['env']['weight']
     i = argbestDE(population, args)
-    S = [i] + sampleDE(len(population), 2, [index, i])
+    S = [i] + samplex(len(population), 2, [index, i])
     a, b, c = [population[i] for i in S]
     ind[keyx] = a[keyx] + weight * (b[keyx] - c[keyx])
 
@@ -59,7 +52,7 @@ def probesCur2Best(ind, population, args):
     index = args['index']
     weight = args['env']['weight']
     i = argbestDE(population, args)
-    S = [index, i] + sampleDE(len(population), 2, [index, i])
+    S = [index, i] + samplex(len(population), 2, [index, i])
     cur, a, b, c = [population[i] for i in S]
     ind[keyx] = cur[keyx] + weight * (a[keyx] - cur[keyx] + b[keyx] - c[keyx])
 
@@ -68,7 +61,7 @@ def probesBest2(ind, population, args):
     index = args['index']
     weight = args['env']['weight']
     i = argbestDE(population, args)
-    S = [i] + sampleDE(len(population), 4, [index, i])
+    S = [i] + samplex(len(population), 4, [index, i])
     a, b, c, d, e = [population[i] for i in S]
     ind[keyx] = a[keyx] + weight * (b[keyx] - c[keyx] + d[keyx] - e[keyx])
 
@@ -76,7 +69,7 @@ def probesRandom5(ind, population, args):
     keyx = args['keyx']
     index = args['index']
     weight = args['env']['weight']
-    S = sampleDE(len(population), 5, [index])
+    S = samplex(len(population), 5, [index])
     a, b, c, d, e = [population[i] for i in S]
     ind[keyx] = a[keyx] + weight * (b[keyx] - c[keyx] + d[keyx] - e[keyx])
 
