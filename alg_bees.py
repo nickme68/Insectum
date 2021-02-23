@@ -15,14 +15,6 @@ class beesAlgorithm(algorithm):
         else:
             self.env['places'].sort(key=lambda x: -x['f'])
 
-    @staticmethod
-    def updatePlace(ind, args):
-        isBetter = args['metrics'].task.isBetter
-        pl = args['env']['places'][ind['p']]
-        if isBetter(ind['f'], pl['f']):
-            pl['f'] = ind['f']
-            pl['x'] = ind['x'].copy()
-
     def start(self):
         algorithm.start(self, "places probs plNum", "x f p")
         pl = {'x':None, 'f':None}
@@ -32,13 +24,19 @@ class beesAlgorithm(algorithm):
         self.sortPlaces()
         self.env['probs'] = self.opPlaceProbs(self.plNum, self.probScout)
 
+    def reduceOp(self, x, y):
+        return [y[i] if x[i] == None or y[i] != None and self.metrics.task.isBetter(y[i]['f'], x[i]['f']) else x[i] for i in range(len(x))]
+
+    def extractOp(self, ind):
+        return [{'x':ind['x'].copy(), 'f':ind['f']} if i == ind['p'] else None for i in range(self.plNum + 1)]
+
     def __call__(self):
         self.start()
         while not self.metrics.stopIt():
             self.newGeneration()
             foreach(self.population, self.opFlight, self.args(key='x'))
             self.evaluateAll()
-            foreach(self.population, self.updatePlace, self.args()) # TODO: replace by reduce!
+            self.env['places'] = reducePop(self.population, self.extractOp, self.reduceOp, lambda x: x, initVal = self.env['places'])
             self.sortPlaces()
 
 class beeFlight: 

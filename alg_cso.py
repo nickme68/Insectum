@@ -39,7 +39,6 @@ class competitiveSwarmOptimizer(algorithm):
         self.start()
         while not self.metrics.stopIt():
             self.newGeneration()
-            pop2env(self.population, 'x', np.add, self.env, 'x')
-            self.env['x'] /= self.popSize
+            self.env['x'] = reducePop(self.population, lambda x: x['x'], np.add, lambda x: x / self.popSize)
             self.compete(self.population, self.args()) 
             evaluate(self.population, self.args(keyx='x', keyf='f', reEval='reEval'))

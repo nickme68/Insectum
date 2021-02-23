@@ -1,7 +1,7 @@
 import numpy as np
 import insectum as im
 
-target = im.realTask.toMin(target=lambda x: np.sum(np.square(x)), dimension=2, bounds=[-10, 10])
+target = im.realTask.toMin(target=lambda x: np.sum(np.square(x)), dimension=10, bounds=[-10, 10])
 stop = im.stopMaxGeneration(500)
 #stop = im.stopValue(0.000001, 1000)
 m = im.metrics(target, stop, verbose=50)

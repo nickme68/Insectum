@@ -14,7 +14,7 @@ class particleSwarmOptimization(algorithm):
     def updateVel(ind, args):
         gamma = evalf(args['env']['gamma'], [args, ind])
         alpha, beta = evalf(args['env']['alphabeta'], [args, ind])
-        g = args['metrics'].bestSolution
+        g = args['env']['g']
         ind['v'] = gamma * ind['v'] + alpha * (ind['p'] - ind['x']) + beta * (g - ind['x'])
 
     @staticmethod
@@ -25,7 +25,7 @@ class particleSwarmOptimization(algorithm):
             ind['f'] = ind['fNew']
 
     def start(self):
-        algorithm.start(self, "alphabeta gamma", "x f fNew v p")
+        algorithm.start(self, "alphabeta gamma g", "x f fNew v p")
         foreach(self.population, self.opInit, self.args(key='x'))
         foreach(self.population, copyAttribute, self.args(keyFrom='x', keyTo='p'))
         self.evaluateAll()
@@ -36,6 +36,8 @@ class particleSwarmOptimization(algorithm):
         self.start()
         while not self.metrics.stopIt():
             self.newGeneration()
+            op = lambda x, y: x if self.metrics.task.isBetter(x[1], y[1]) else y
+            self.env['g'] = reducePop(self.population, lambda x: (x['p'], x['f']), op, lambda x: x[0])
             foreach(self.population, self.updateVel, self.args())
             if self.opLimitVel != None:
                 foreach(self.population, self.opLimitVel, self.args(key='v'))

@@ -1,5 +1,6 @@
 import numpy as np
 
-a = np.random.rand(5, 2)
+x = np.array(range(10))
+y = np.array(range(-5, 15, 2))
 
-print(a)
+print(np.minimum(x, y))

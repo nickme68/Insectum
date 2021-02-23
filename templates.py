@@ -34,7 +34,7 @@ def pop2ind(population1, population2, op, args):
         a.update(args)
         op(ind, population2, a)
 
-def pop2env(population, keyx, op, env, keye):
-    env[keye] = reduce(op, map(lambda ind: ind[keyx], population))
-
-
+def reducePop(population, extract, op, post, initVal=None):
+    if initVal != None:
+        return post(reduce(op, map(lambda ind: extract(ind), population), initVal))
+    return post(reduce(op, map(lambda ind: extract(ind), population)))
