@@ -12,14 +12,15 @@ class metrics:
         self.currentGeneration = 0
         self.data = [[]]
         self.verbose = verbose
-    def newEval(self, ind, keyx, keyf, reEval):
+    def newEval(self, x, f, reEval):
         if reEval:
-            ind[keyf] = self.task(ind[keyx])
+            f = self.task(x)
             self.efs += 1
-            if self.bestValue == None or self.task.isBetter(ind[keyf], self.bestValue):
-                self.bestValue = ind[keyf]
-                self.bestSolution = np.copy(ind[keyx])
-        self.data[-1].append(ind[keyf])
+            if self.bestValue == None or self.task.isBetter(f, self.bestValue):
+                self.bestValue = f
+                self.bestSolution = np.copy(x)
+        self.data[-1].append(f)
+        return f
     def newGeneration(self):
         self.currentGeneration += 1
         if self.verbose > 0 and self.currentGeneration % self.verbose == 0:
@@ -49,6 +50,8 @@ class metrics:
             ax.set_yscale('log')
         plt.show()
 
+# classes for stopping main loop in all algorithms
+ 
 class stopMaxGeneration:
     def __init__(self, maxGen):
         self.maxGen = maxGen

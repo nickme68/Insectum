@@ -9,20 +9,20 @@ def isSmaller(x, y):
 
 class task:
     def __init__(self):
-        self.encoding = None
-        self.target = None 
-        self.isBetter = None
-        self.dimension = None 
+        self.encoding = None # binary, real, permutations (currently this attribute is not used)
+        self.target = lambda x: None # target function for optimizing
+        self.isBetter = lambda x, y: None # compares two values of target function, which one is better
+        self.dimension = None # task dimension
 
     def initAttributes(self, args):
-        self.__dict__.update(args)
+        self.__dict__.update(args) # initialize all attributes by given in args values
  
-    def getDir(self):
+    def getDir(self): # direction of optimization
         if self.isBetter == isLarger:
             return "max"
         return "min"
 
-    def __call__(self, x):
+    def __call__(self, x): # evaluate target function for given value x
         return self.target(x) 
 
 # binary task
@@ -31,8 +31,8 @@ class binaryTask(task):
     def __init__(self, args):
         task.__init__(self)
         task.initAttributes(self, args)
-    def defaultInit(self):
-        return randomBinaryVector()
+    def defaultInit(self): # default random solution for binary optimization (used for initialization populations)
+        return randomBinaryVector() # see code below
     @classmethod
     def toMin(cls, **args):
         args.update({"encoding":"binary", "isBetter":isSmaller})
@@ -45,7 +45,7 @@ class binaryTask(task):
 class randomBinaryVector:
     def __init__(self):
         pass
-    def __call__(self, args):
+    def __call__(self, args): 
         dim = args['metrics'].task.dimension
         return np.random.randint(2, size=dim)
 
@@ -54,7 +54,7 @@ class randomBinaryVector:
 class realTask(task):
     def __init__(self, args):
         task.__init__(self)
-        self.bounds = None
+        self.bounds = None # used as initial bounds of all variables for optimization
         task.initAttributes(self, args)
     def defaultInit(self):
         return randomRealVector(self.bounds)
@@ -109,6 +109,3 @@ if __name__ == "__main__":
     q = t.defaultInit()
     print(q(10))
     print("ok")
-
-    name, q = "A", 2
-    print(f"Hello, {name}! How's it {q}?")
