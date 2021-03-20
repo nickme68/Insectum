@@ -1,21 +1,21 @@
 import numpy as np
-import insectum as im
+import insectae as ins
 
-target = im.realTask.toMin(target=lambda x: np.sum(np.square(x)), dimension=2, bounds=[-10, 10])
-stop = im.stopMaxGeneration(1500)
-#stop = im.stopValue(0.000001, 1000)
-m = im.metrics(target, stop, verbose=50)
+g = ins.toMin()
+m = ins.metrics(goal=g, verbose=50)
+t = ins.realTarget(metrics=m, target=lambda x: np.sum(np.square(x)), dimension=10, bounds=[-10, 10])
+s = ins.stopMaxGeneration(1500, metrics=m)
 
-#ab = lambda x: (np.random.random() * 0.1, np.random.random() * 0.1)
-bfoa = im.bacterialForagingAlgorithm(metrics=m, popSize=20, gamma=10, probRotate=(0.1, 0.9), vel=im.hypCool(1.0, 1.0), mu=0.001)
+bfoa = ins.bacterialForagingAlgorithm(goal=g, target=t, stop=s, popSize=100, gamma=0.1, probRotate=(0.01, 0.99), vel=ins.expCool(1.0, 0.99), mu=0.01)
 
-bfoa.opSelect = im.shuffled(im.probOp(im.tournament(pwin=1.0),0.5))
-bfoa.opDisperse = im.probOp(im.fillAttribute(im.randomRealVector(target.bounds)), 0.0001) 
-#bfoa.opDisperse = im.realMutation(im.expCool(0.5, 0.9)) 
+bfoa.opSelect = ins.shuffled(ins.timedOp(ins.probOp(ins.tournament(pwin=0.6), 0.9), 10))
+bfoa.opDisperse = ins.probOp(ins.fillAttribute(ins.randomRealVector(t.dimension, t.bounds)), 0.0001) 
+#bfoa.opDisperse = ins.timedOp(ins.probOp(ins.realMutation(ins.expCool(0.001,0.999)), 0.1), 20) 
 #im.realMutation(prob=0.001) #im.expCool(0.1, 0.99))
 
-bfoa.opSignal = im.calcSignals(1, im.signalClustering(0.0001, "min"), "sum")
+#bfoa.opSignals = ins.noSignals()
+bfoa.opSignals = ins.timedOp(ins.calcSignals(shape=ins.signalClustering(0.00001, "min")), 10)
+#bfoa.opSignals = ins.timedOp(ins.calcSignals(shape=ins.signalClustering(ins.expCool(0.001, 0.999), "min")), 10)
 
 bfoa()
 m.show(log=True)
-

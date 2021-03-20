@@ -1,12 +1,12 @@
 import numpy as np
-import insectum as im
+import insectae as ins
 
-target = im.realTask.toMin(target=lambda x: np.sum(np.square(x - 5.0)), dimension=10, bounds=[-10, 10])
-stop = im.stopMaxGeneration(500)
-#stop = im.stopValue(0.000001, 1000)
-m = im.metrics(target, stop, verbose=50)
+g = ins.toMin()
+m = ins.metrics(goal=g, verbose=50)
+t = ins.realTarget(metrics=m, target=lambda x: np.sum(np.square(x)), dimension=10, bounds=[-10, 10])
+s = ins.stopMaxGeneration(500, metrics=m)
 
-cso = im.competitiveSwarmOptimizer(metrics=m, popSize=20, delta=0.01, socialFactor=0.1)
+cso = ins.competitiveSwarmOptimizer(target=t, goal=g, stop=s, popSize=20, delta=0.01, socialFactor=0.1)
 
 cso()
 m.show(log=True)

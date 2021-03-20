@@ -1,5 +1,7 @@
-from alg_base import * 
-from tasks import randomRealVector
+import numpy as np
+from targets import randomRealVector
+from alg_base import algorithm, evalf, fillAttribute, shuffled
+from patterns import evaluate, foreach, reducePop 
 
 class competitiveSwarmOptimizer(algorithm):
     def __init__(self, **args):
@@ -11,11 +13,11 @@ class competitiveSwarmOptimizer(algorithm):
     @staticmethod
     def tournament(pair, args):
         ind1, ind2 = pair
-        dim = args['metrics'].task.dimension
+        dim = args['env']['target'].dimension
         x = args['env']['x']
         phi = evalf(args['env']['socialFactor'], [args, ind1, ind2])
 
-        firstWin = args['metrics'].task.isBetter(ind1['f'], ind2['f'])
+        firstWin = args['env']['goal'].isBetter(ind1['f'], ind2['f'])
         ind1['reEval'] = not firstWin
         ind2['reEval'] = firstWin
         R = np.random.rand(3, dim)
@@ -31,13 +33,13 @@ class competitiveSwarmOptimizer(algorithm):
         algorithm.start(self, "socialFactor x", "x f v reEval")
         foreach(self.population, self.opInit, self.args(key='x'))
         self.evaluateAll()
-        vel = self.delta * (self.metrics.task.bounds[1] - self.metrics.task.bounds[0])
-        foreach(self.population, fillAttribute(randomRealVector(bounds=[-vel, vel])), self.args(key='v'))
+        vel = self.delta * (self.target.bounds[1] - self.target.bounds[0])
+        foreach(self.population, fillAttribute(randomRealVector(dim=self.target.dimension, bounds=[-vel, vel])), self.args(key='v'))
         self.compete = shuffled(self.tournament)
 
     def __call__(self):
         self.start()
-        while not self.metrics.stopIt():
+        while not self.stop(self.env):
             self.newGeneration()
             self.env['x'] = reducePop(self.population, lambda x: x['x'], np.add, lambda x: x / self.popSize)
             self.compete(self.population, self.args()) 

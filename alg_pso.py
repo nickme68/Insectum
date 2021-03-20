@@ -1,5 +1,8 @@
-from alg_base import * 
-from tasks import randomRealVector
+import numpy as np
+from targets import randomRealVector
+from alg_base import algorithm, evalf, fillAttribute, copyAttribute, simpleMove
+from patterns import foreach, reducePop 
+import copy
 
 class particleSwarmOptimization(algorithm):
     def __init__(self, **args):
@@ -19,8 +22,8 @@ class particleSwarmOptimization(algorithm):
 
     @staticmethod
     def updateBestPosition(ind, args):
-        task = args['metrics'].task
-        if task.isBetter(ind['fNew'], ind['f']):
+        goal = args['env']['goal']
+        if goal.isBetter(ind['fNew'], ind['f']):
             ind['p'] = ind['x'].copy()
             ind['f'] = ind['fNew']
 
@@ -29,14 +32,14 @@ class particleSwarmOptimization(algorithm):
         foreach(self.population, self.opInit, self.args(key='x'))
         foreach(self.population, copyAttribute, self.args(keyFrom='x', keyTo='p'))
         self.evaluateAll()
-        vel = self.delta * (self.metrics.task.bounds[1] - self.metrics.task.bounds[0])
-        foreach(self.population, fillAttribute(randomRealVector(bounds=[-vel, vel])), self.args(key='v'))
+        vel = self.delta * (self.target.bounds[1] - self.target.bounds[0])
+        foreach(self.population, fillAttribute(randomRealVector(dim=self.target.dimension, bounds=[-vel, vel])), self.args(key='v'))
 
     def __call__(self):
         self.start()
-        while not self.metrics.stopIt():
+        while not self.stop(self.env):
             self.newGeneration()
-            op = lambda x, y: x if self.metrics.task.isBetter(x[1], y[1]) else y
+            op = lambda x, y: x if self.goal.isBetter(x[1], y[1]) else y
             self.env['g'] = reducePop(self.population, lambda x: (x['p'], x['f']), op, lambda x: x[0])
             foreach(self.population, self.updateVel, self.args())
             if self.opLimitVel != None:

@@ -1,16 +1,20 @@
-from alg_base import * 
+import numpy as np
+from random import random
+from targets import randomRealVector
+from alg_base import algorithm, evalf, fillAttribute, simpleMove, copyAttribute
+from patterns import foreach, evaluate, reducePop
 
 class beesAlgorithm(algorithm):
     def __init__(self, **args):
         algorithm.__init__(self)
         self.opFlight = None
-        self.opPlaceProbs = None
+        self.opPlaceProbs = lambda x, y: None
         self.plNum = None
         self.probScout = None
         algorithm.initAttributes(self, args)
 
     def sortPlaces(self):
-        if self.metrics.task.getDir() == "min":
+        if self.goal.getDir() == "min":
             self.env['places'].sort(key=lambda x: x['f'])
         else:
             self.env['places'].sort(key=lambda x: -x['f'])
@@ -25,14 +29,14 @@ class beesAlgorithm(algorithm):
         self.env['probs'] = self.opPlaceProbs(self.plNum, self.probScout)
 
     def reduceOp(self, x, y):
-        return [y[i] if x[i] == None or y[i] != None and self.metrics.task.isBetter(y[i]['f'], x[i]['f']) else x[i] for i in range(len(x))]
+        return [y[i] if x[i] == None or y[i] != None and self.goal.isBetter(y[i]['f'], x[i]['f']) else x[i] for i in range(len(x))]
 
     def extractOp(self, ind):
         return [{'x':ind['x'].copy(), 'f':ind['f']} if i == ind['p'] else None for i in range(self.plNum + 1)]
 
     def __call__(self):
         self.start()
-        while not self.metrics.stopIt():
+        while not self.stop(self.env):
             self.newGeneration()
             foreach(self.population, self.opFlight, self.args(key='x'))
             self.evaluateAll()

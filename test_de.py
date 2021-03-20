@@ -1,15 +1,16 @@
 import numpy as np
-import insectum as im
+import insectae as ins
 
-target = im.realTask.toMin(target=lambda x: np.sum(np.square(x)), dimension=10, bounds=[-10, 10])
-stop = im.stopMaxGeneration(1000)
-m = im.metrics(target, stop, verbose=200)
+g = ins.toMin()
+m = ins.metrics(goal=g, verbose=200)
+t = ins.realTarget(metrics=m, target=lambda x: np.sum(np.square(x)), dimension=10, bounds=[-10, 10])
+s = ins.stopMaxGeneration(1000, metrics=m)
 
-de = im.differentialEvolution(metrics=m, popSize=20, weight=0.8)
+de = ins.differentialEvolution(target=t, goal=g, stop=s, popSize=20)
 
-de.opMakeProbe = im.probesRandom5 #probesBest2 #probesCur2Best #probesBest #probesClassic
-de.opCrossover = im.uniformCrossover(0.9)
-de.opSelect = im.tournament(1.0)
+de.opMakeProbe = ins.probesBest(0.8) #probesBest2 #probesCur2Best #probesBest #probesClassic
+de.opCrossover = ins.uniformCrossover(0.9)
+de.opSelect = ins.tournament(1.0)
 
 de()
 m.show(log=True)

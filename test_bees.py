@@ -1,22 +1,21 @@
 import numpy as np
-import insectum as im
+import insectae as ins
 
-target = im.realTask.toMin(target=lambda x: np.sum(np.square(x)), dimension=2, bounds=[-10, 10])
-#target = im.binaryTask.toMin(target=lambda x: np.sum(x), dimension=100)
-stop = im.stopMaxGeneration(500)
-#stop = im.stopValue(0.000001, 1000)
-m = im.metrics(target, stop, verbose=50)
+g = ins.toMin()
+m = ins.metrics(goal=g, verbose=200)
+t = ins.realTarget(metrics=m, target=lambda x: np.sum(np.square(x)), dimension=10, bounds=[-10, 10])
+s = ins.stopMaxGeneration(1000, metrics=m)
 
-bees = im.beesAlgorithm(metrics=m, popSize=20, plNum=10, probScout=0.01)
+bees = ins.beesAlgorithm(target=t, goal=g, stop=s, popSize=20, plNum=10, probScout=0.0001)
 
 #bees.opPlaceProbs = im.uniformPlacesProbs
-bees.opPlaceProbs = im.linearPlacesProbs(0.9)
+bees.opPlaceProbs = ins.linearPlacesProbs(0.9)
 
-loc = im.realMutation(im.expCool(0.1, 0.99))
-glob = im.fillAttribute(im.randomRealVector(target.bounds))
+loc = ins.realMutation(ins.expCool(1, 0.99))
+glob = ins.fillAttribute(ins.randomRealVector(t.dimension, t.bounds))
 #loc = im.binaryMutation(im.expCool(0.1, 0.99))
 #glob = im.fillAttribute(im.randomBinaryVector())
-bees.opFlight = im.beeFlight(loc, glob) 
+bees.opFlight = ins.beeFlight(loc, glob) 
 
 bees()
 m.show(log=True)
