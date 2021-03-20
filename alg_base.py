@@ -48,10 +48,11 @@ class algorithm:
 # Common stuff
 
 def samplex(n, m, x):
-    s = []
-    for i in range(n):
-        if i not in x:
-            s.append(i)
+    #s = []
+    #for i in range(n):
+    #    if i not in x:
+    #        s.append(i)
+    s = list(set(range(n)) - set(x))
     return list(np.random.choice(s, m, False))
 
 class shuffled:
@@ -115,8 +116,8 @@ class expCool:
         self.gen = 0
     def __call__(self, args):
         gen = args[0]['metrics'].currentGeneration
-        if gen == 0:
-            return self.x
+        #if gen == 0:
+        #    return self.x
         if gen > self.gen:
             self.gen = gen
             self.x *= self.q

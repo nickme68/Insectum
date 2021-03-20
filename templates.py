@@ -8,10 +8,7 @@ def evaluate(population, args): # this function can be parallelized by MPI for h
     keyx = args['keyx']
     keyf = args['keyf']
     for ind in population:
-        if 'reEval' in args:
-            reEval = ind[args['reEval']]
-        else:
-            reEval = True
+        reEval = 'reEval' not in args or ind[args['reEval']]
         ind[keyf] = metrics.newEval(ind[keyx], ind[keyf], reEval) 
 
 def foreach(population, op, args):

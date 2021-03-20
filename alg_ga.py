@@ -57,6 +57,7 @@ class uniformCrossover:
                     ind1[key][pos], ind2[key][pos] = ind2[key][pos], ind1[key][pos]
                 else:
                     ind1[key][pos] = ind2[key][pos] 
+                    
 class singlePointCrossover:
     def __init__(self, twoway=True):
         self.twoway = twoway

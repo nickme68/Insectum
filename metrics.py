@@ -41,7 +41,7 @@ class metrics:
             A.append(np.mean(x))
             M.append(np.median(x))
         X = list(range(len(B)))
-        fig, ax = plt.subplots(figsize=(width, height))
+        ax = plt.subplots(figsize=(width, height))[1]
         ax.plot(X, B, color="green", label="best")
         ax.plot(X, A, color="blue", label="average")
         ax.plot(X, M, color="red", label="median")

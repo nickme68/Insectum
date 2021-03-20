@@ -3,7 +3,7 @@ from alg_base import *
 class differentialEvolution(algorithm):
     def __init__(self, **args):
         algorithm.__init__(self)
-        self.opMakeProbes = None
+        self.opMakeProbe = None
         self.opCrossover = None
         self.opSelect = None
         self.weight = None
@@ -18,7 +18,7 @@ class differentialEvolution(algorithm):
         self.start()
         while not self.metrics.stopIt():
             self.newGeneration()
-            pop2ind(self.probes, self.population, self.opMakeProbes, self.args(keyx='x', keyf='f'))
+            pop2ind(self.probes, self.population, self.opMakeProbe, self.args(keyx='x'))
             pairwise(self.probes, self.population, self.opCrossover, self.args(key='x', twoway=False))
             evaluate(self.probes, self.args(keyx='x', keyf='f'))
             pairwise(self.population, self.probes, self.opSelect, self.args(key='f', twoway=False))
