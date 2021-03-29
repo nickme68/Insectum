@@ -8,7 +8,7 @@ s = ins.stopMaxGeneration(1000, metrics=m)
 
 de = ins.differentialEvolution(target=t, goal=g, stop=s, popSize=20)
 
-de.opMakeProbe = ins.probesBest(0.8) #probesBest2 #probesCur2Best #probesBest #probesClassic
+de.opMakeProbe = ins.probesClassic(0.8) #probesBest2 #probesCur2Best #probesBest #probesClassic
 de.opCrossover = ins.uniformCrossover(0.9)
 de.opSelect = ins.tournament(1.0)
 

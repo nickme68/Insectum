@@ -2,6 +2,7 @@ import numpy as np
 from random import random, choices
 import copy
 from patterns import evaluate, neighbors, pairs
+from targets import getGoal 
 
 def evalf(x, args):
     if callable(x):
@@ -11,7 +12,7 @@ def evalf(x, args):
 class algorithm: 
     def __init__(self):
         self.target = None
-        self.goal = None
+        self.goal = "min"
         self.stop = lambda x: None
         self.popSize = None
         self.opInit = None
@@ -23,6 +24,7 @@ class algorithm:
     def addProcedure(self, proc):
         self.additionalProcedures.append(proc)
     def start(self, envAttrs, indAttrs, shadows = ""):
+        self.goal = getGoal(self.goal)
         # environment
         keys = ["target", "goal", "time"] + envAttrs.split()
         self.env = dict(zip(keys, [None] * len(keys)))

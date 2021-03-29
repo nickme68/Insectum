@@ -1,4 +1,5 @@
 import numpy as np
+from random import random
 from targets import randomRealVector
 from alg_base import algorithm, evalf, fillAttribute, copyAttribute, simpleMove
 from patterns import foreach, reducePop 
@@ -47,6 +48,23 @@ class particleSwarmOptimization(algorithm):
             foreach(self.population, simpleMove, self.args(x='x', v='v', dt=1.0))
             self.evaluateAll(keyf='fNew')
             foreach(self.population, self.updateBestPosition, self.args())
+
+class randomAlphaBeta:
+    def __init__(self, a, b=0):
+        self.alpha = a
+        self.beta = b if b > 0 else a
+    def __call__(self, args):
+        a = random() * self.alpha
+        b = random() * self.beta
+        return a, b
+
+class linkedAlphaBeta:
+    def __init__(self, t):
+        self.total = t
+    def __call__(self, args):
+        a = random() * self.total
+        b = self.total - a
+        return a, b
 
 class maxAmplitude:
     def __init__(self, amax):

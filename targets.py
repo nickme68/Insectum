@@ -12,6 +12,13 @@ class toMin:
     def getDir(self):
         return "min"
 
+def getGoal(g):
+    if g == "min":
+        return toMin()
+    if g == "max":
+        return toMax()
+    return g
+    
 class target:
     def __init__(self):
         self.encoding = None 

@@ -1,16 +1,17 @@
 import matplotlib
 import matplotlib.pyplot as plt 
-import numpy as np 
+import numpy as np
+from targets import getGoal
 
 class metrics:
-    def __init__(self, goal, verbose=0):
+    def __init__(self, goal="min", verbose=0):
         self.bestSolution = None
         self.bestValue = None
         self.efs = 0
         self.currentGeneration = 0
         self.data = [[]]
         self.verbose = verbose
-        self.goal = goal
+        self.goal = getGoal(goal)
     def newEval(self, x, f, reEval):
         if reEval:
             self.efs += 1
