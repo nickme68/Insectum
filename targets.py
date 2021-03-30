@@ -26,7 +26,7 @@ class target:
         self.dimension = None
         self.metrics = None
 
-    def initAttributes(self, args):
+    def initAttributes(self, **args):
         self.__dict__.update(args)
 
     def __call__(self, x, f, reEval):
@@ -40,8 +40,7 @@ class target:
 class binaryTarget(target):
     def __init__(self, **args):
         target.__init__(self)
-        args.update({"encoding":"binary"})
-        target.initAttributes(self, args)
+        target.initAttributes(self, encoding="binary", **args)
     def defaultInit(self): 
         return randomBinaryVector(self.dimension) 
   
@@ -57,8 +56,7 @@ class realTarget(target):
     def __init__(self, **args):
         target.__init__(self)
         self.bounds = None 
-        args.update({"encoding":"real"})
-        target.initAttributes(self, args)
+        target.initAttributes(self, encoding="real", **args)
     def defaultInit(self):
         return randomRealVector(self.dimension, self.bounds)
 
@@ -75,8 +73,7 @@ class randomRealVector:
 class permutationTarget(target):
     def __init__(self, args):
         target.__init__(self)
-        args.update({"encoding":"permutation"})
-        target.initAttributes(self, args)
+        target.initAttributes(self, encoding="permutation", **args)
     def defaultInit(self):
         return randomPermutation(self.dimension)
 

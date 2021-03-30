@@ -10,6 +10,7 @@ pso = ins.particleSwarmOptimization(target=t, goal=g, stop=s, popSize=100, gamma
 #pso.opLimitVel = im.maxAmplitude(0.95)
 pso.alphabeta= ins.linkedAlphaBeta(0.1) #(0.1, 0.1), 
 pso.opLimitVel = ins.maxAmplitude(ins.expCool(0.5, 0.999))
+#pso.mode = "gpu openmp"
 
 pso()
 m.show(log=True)

@@ -11,7 +11,7 @@ class beesAlgorithm(algorithm):
         self.opPlaceProbs = lambda x, y: None
         self.plNum = None
         self.probScout = None
-        algorithm.initAttributes(self, args)
+        algorithm.initAttributes(self, **args)
 
     def sortPlaces(self):
         if self.goal.getDir() == "min":
@@ -23,8 +23,8 @@ class beesAlgorithm(algorithm):
         algorithm.start(self, "places probs plNum", "x f p")
         pl = {'x':None, 'f':None}
         self.env['places'] = [pl.copy() for i in range(self.plNum + 1)]
-        foreach(self.env['places'], self.opInit, self.args(key='x'))
-        evaluate(self.env['places'], self.args(keyx='x', keyf='f'))
+        foreach(self.env['places'], self.opInit, key='x', **self.env)
+        evaluate(self.env['places'], keyx='x', keyf='f', **self.env)
         self.sortPlaces()
         self.env['probs'] = self.opPlaceProbs(self.plNum, self.probScout)
 
@@ -38,7 +38,7 @@ class beesAlgorithm(algorithm):
         self.start()
         while not self.stop(self.env):
             self.newGeneration()
-            foreach(self.population, self.opFlight, self.args(key='x'))
+            foreach(self.population, self.opFlight, key='x', **self.env)
             self.evaluateAll()
             self.env['places'] = reducePop(self.population, self.extractOp, self.reduceOp, lambda x: x, initVal = self.env['places'])
             self.sortPlaces()
@@ -47,17 +47,16 @@ class beeFlight:
     def __init__(self, opLocal, opGlobal):
         self.loc = opLocal
         self.glob = opGlobal
-    def __call__(self, ind, args):
-        env = args['env']
-        m = env['plNum']
-        probs = env['probs']
+    def __call__(self, ind, **xt):
+        m = xt['plNum']
+        probs = xt['probs']
         p = np.random.choice(range(m + 1), p=probs)
         ind['p'] = p
         if p < m:
-            ind['x'] = env['places'][p]['x'].copy()
-            self.loc(ind, args)
+            ind['x'] = xt['places'][p]['x'].copy()
+            self.loc(ind, **xt)
         else:
-            self.glob(ind, args)
+            self.glob(ind, **xt)
 
 def uniformPlacesProbs(num, pscout):
     probs = np.full(num + 1, (1 - pscout) / num )

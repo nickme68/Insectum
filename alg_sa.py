@@ -9,26 +9,26 @@ class simulatedAnnealing(algorithm):
         algorithm.__init__(self)
         self.opMove = None
         self.theta = None
-        algorithm.initAttributes(self, args)
+        algorithm.initAttributes(self, **args)
 
     def start(self):
         algorithm.start(self, "theta", "x xNew f fNew")
-        foreach(self.population, self.opInit, self.args(key='x'))
+        foreach(self.population, self.opInit, key='x', **self.env) 
         self.evaluateAll()
 
     def __call__(self):
         self.start()
         while not self.stop(self.env):
             self.newGeneration()
-            foreach(self.population, copyAttribute, self.args(keyFrom='x', keyTo='xNew'))
-            foreach(self.population, self.opMove, self.args(key='xNew'))
+            foreach(self.population, copyAttribute, keyFrom='x', keyTo='xNew', **self.env) 
+            foreach(self.population, self.opMove, key='xNew', **self.env) 
             self.evaluateAll(keyx='xNew', keyf='fNew')
-            foreach(self.population, self.accept, self.args())
+            foreach(self.population, self.accept, **self.env) 
             
     @staticmethod
-    def accept(ind, args):
-        theta = evalf(args['env']['theta'], [args, ind])
-        goal = args['env']['goal']
+    def accept(ind, **xt):
+        theta = evalf(xt['theta'], inds=[ind], **xt) 
+        goal = xt['goal']
         df = abs(ind['fNew'] - ind['f'])
         if goal.isBetter(ind['fNew'], ind['f']) or random() < exp(-df / theta):
             ind['f'] = ind['fNew']
@@ -39,8 +39,8 @@ class expCool:
         self.x = x0
         self.q = q
         self.gen = 0
-    def __call__(self, args):
-        gen = args[0]['env']['time']
+    def __call__(self, **xt):
+        gen = xt['time']
         if gen > self.gen:
             self.gen = gen
             self.x *= self.q
@@ -53,8 +53,8 @@ class hypCool:
         self.x = x0
         self.deg = deg
         self.gen = 0
-    def __call__(self, args):
-        gen = args[0]['env']['time']
+    def __call__(self, **xt):
+        gen = xt['time']
         if gen == 0:
             return self.x
         if gen > self.gen:
@@ -66,9 +66,9 @@ class hypCool:
 class realMutation:
     def __init__(self, delta):
         self.delta = delta
-    def __call__(self, ind, args):
-        key = args['key']
-        delta = evalf(self.delta, [args, ind])
+    def __call__(self, ind, **xt):
+        key = xt['key']
+        delta = evalf(self.delta, inds=[ind], **xt) 
         dim = len(ind[key])
         for pos in range(dim):
             ind[key][pos] += delta * (1 - 2 * random())
@@ -76,9 +76,9 @@ class realMutation:
 class binaryMutation:
     def __init__(self, prob):
         self.prob = prob
-    def __call__(self, ind, args):
-        key = args['key']
-        prob = evalf(self.prob, [args, ind])
+    def __call__(self, ind, **xt):
+        key = xt['key']
+        prob = evalf(self.prob, inds=[ind], **xt) 
         dim = len(ind[key])
         for pos in range(dim):
             if random() < prob:

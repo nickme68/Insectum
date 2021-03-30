@@ -1,13 +1,12 @@
 import numpy as np
 from functools import reduce
 
-x = np.ones(10)
-print(x)
+def f(**args):
+    for a in args.keys():
+        print(a, "->", args[a])
 
-def f(x):
-    if x > 0: return x + 1
-    return x - 1
+def g(**args):
+    f(x=3, **args)        
 
-print(f(x))
-print(np.array(list(map(f, x))))
+g(a=1, b=2)
 

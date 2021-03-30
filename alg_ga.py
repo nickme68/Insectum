@@ -9,31 +9,31 @@ class geneticAlgorithm(algorithm):
         self.opSelect = lambda x, y: None
         self.opCrossover = lambda x, y: None
         self.opMutate = None
-        algorithm.initAttributes(self, args)
+        algorithm.initAttributes(self, **args)
 
     def start(self):
         algorithm.start(self, "", "x f")
-        foreach(self.population, self.opInit, self.args(key='x'))
+        foreach(self.population, self.opInit, key='x', **self.env) 
         self.evaluateAll()
 
     def __call__(self):
         self.start()
         while not self.stop(self.env):
             self.newGeneration()
-            self.opSelect(self.population, self.args(key='f'))
-            self.opCrossover(self.population, self.args(key='x'))
-            foreach(self.population, self.opMutate, self.args(key='x'))
+            self.opSelect(self.population, key='f', **self.env) 
+            self.opCrossover(self.population, key='x', **self.env)
+            foreach(self.population, self.opMutate, key='x', **self.env) 
             self.evaluateAll()
 
 class tournament:
     def __init__(self, pwin):
         self.pwin = pwin
-    def __call__(self, pair, args):
+    def __call__(self, pair, **xt):
         ind1, ind2 = pair
-        key = args['key']
-        twoway = args['twoway']
-        goal = args['env']['goal']
-        pwin = evalf(self.pwin, [args, ind1, ind2])
+        key = xt['key']
+        twoway = xt['twoway']
+        goal = xt['goal']
+        pwin = evalf(self.pwin, inds=[ind1, ind2], **xt)
         A = goal.isBetter(ind1[key], ind2[key])
         B = random() < pwin
         if A != B: # xor
@@ -46,14 +46,14 @@ class tournament:
 class uniformCrossover:
     def __init__(self, pswap):
         self.pswap = pswap
-    def __call__(self, pair, args):
+    def __call__(self, pair, **xt):
         ind1, ind2 = pair
-        pswap = evalf(self.pswap, [args, ind1, ind2])
-        key = args['key']
-        dim = args['env']['target'].dimension
+        pswap = evalf(self.pswap, inds=[ind1, ind2], **xt)
+        key = xt['key']
+        dim = xt['target'].dimension
         for pos in range(dim):
             if random() < pswap:
-                if args['twoway']:
+                if xt['twoway']:
                     ind1[key][pos], ind2[key][pos] = ind2[key][pos], ind1[key][pos]
                 else:
                     ind1[key][pos] = ind2[key][pos] 
@@ -61,13 +61,13 @@ class uniformCrossover:
 class singlePointCrossover:
     def __init__(self):
         pass
-    def __call__(self, pair, args):
+    def __call__(self, pair, **xt):
         ind1, ind2 = pair
-        key = args['key']
-        dim = args['env']['target'].dimension
+        key = xt['key']
+        dim = xt['target'].dimension
         cpos = randrange(1, dim)
         for pos in range(cpos, dim):
-            if args['twoway']:
+            if xt['twoway']:
                 ind1[key][pos], ind2[key][pos] = ind2[key][pos], ind1[key][pos]
             else:
                 ind1[key][pos] = ind2[key][pos]
@@ -75,14 +75,14 @@ class singlePointCrossover:
 class doublePointCrossover:
     def __init__(self):
         pass
-    def __call__(self, pair, args):
+    def __call__(self, pair, **xt):
         ind1, ind2 = pair
-        key = args['key']
-        dim = args['env']['target'].dimension
+        key = xt['key']
+        dim = xt['target'].dimension
         cpos1 = randrange(1, dim - 1)
         cpos2 = randrange(cpos1, dim)
         for pos in range(cpos1, cpos2):
-            if args['twoway']:
+            if xt['twoway']:
                 ind1[key][pos], ind2[key][pos] = ind2[key][pos], ind1[key][pos]
             else:
                 ind1[key][pos] = ind2[key][pos]

@@ -4,10 +4,10 @@ import copy
 from patterns import evaluate, neighbors, pairs
 from targets import getGoal 
 
-def evalf(x, args):
-    if callable(x):
-        return x(args)
-    return x
+def evalf(param, **xt):
+    if callable(param):
+        return param(**xt)
+    return param
 
 class algorithm: 
     def __init__(self):
@@ -19,7 +19,7 @@ class algorithm:
         self.env = None
         self.population = None
         self.additionalProcedures = []
-    def initAttributes(self, args):
+    def initAttributes(self, **args):
         self.__dict__.update(args)
     def addProcedure(self, proc):
         self.additionalProcedures.append(proc)
@@ -41,11 +41,8 @@ class algorithm:
         # shadow populations
         for sh in shadows.split():
             self.__dict__[sh] = [ind.copy() for i in range(self.popSize)]
-    def args(self, **a):
-        a.update({'env':self.env})
-        return a
     def evaluateAll(self, keyx='x', keyf='f'):
-        evaluate(self.population, self.args(keyx=keyx, keyf=keyf))
+        evaluate(self.population, keyx=keyx, keyf=keyf, **self.env) 
     def newGeneration(self):
         self.env['time'] += 1
         for proc in self.additionalProcedures:
@@ -56,18 +53,18 @@ class algorithm:
 class fillAttribute:
     def __init__(self, op):
         self.op = op
-    def __call__(self, ind, args):
-        key = args['key']
+    def __call__(self, ind, **xt):
+        key = xt['key']
         if callable(self.op):
-            ind[key] = self.op(args)
+            ind[key] = self.op(xt)
         elif np.isscalar(self.op):
             ind[key] = self.op
         else:
             ind[key] = self.op.copy()
 
-def copyAttribute(ind, args):
-    keyFrom = args['keyFrom']
-    keyTo = args['keyTo']
+def copyAttribute(ind, **xt):
+    keyFrom = xt['keyFrom']
+    keyTo = xt['keyTo']
     if np.isscalar(ind[keyFrom]):
         ind[keyTo] = ind[keyFrom]
     else:
@@ -77,56 +74,56 @@ class mixture:
     def __init__(self, methods, probs):
         self.methods = methods + [None]
         self.probs = probs + [1 - np.sum(probs)]
-    def __call__(self, inds, args):
+    def __call__(self, inds, **xt):
         m = choices(self.methods, weights=self.probs)[0]
         if m:
-            m(inds, args)
+            m(inds, **xt)
 
 class probOp:
     def __init__(self, method, prob):
         self.method = method
         self.prob = prob
-    def __call__(self, inds, args):
-        prob = evalf(self.prob, [args] + list(inds))
+    def __call__(self, inds, **xt):
+        prob = evalf(self.prob, inds=inds, **xt)
         if random() < prob:
-            self.method(inds, args)
+            self.method(inds, **xt)
 
 class timedOp:
     def __init__(self, method, dt):
         self.method = method
         self.dt = dt
-    def __call__(self, inds, args):
-        t = args['env']['time']
+    def __call__(self, inds, **xt):
+        t = xt['time']
         if t % self.dt == 0:
-            self.method(inds, args)
+            self.method(inds, **xt)
 
 
 class shuffled:
     def __init__(self, op):
         self.op = op
-    def __call__(self, population, args):
+    def __call__(self, population, **xt):
         popSize = len(population)
         P = list(range(popSize))
         np.random.shuffle(P)
-        neighbors(population, self.op, P, args)
+        neighbors(population, self.op, P, **xt)
 
 class selected:
     def __init__(self, op):
         self.op = op
-    def __call__(self, population, args):
+    def __call__(self, population, **xt):
         shadow = []
         for i in range(len(population)):
             j = samplex(len(population), 1, [i])[0]
             shadow.append(copy.deepcopy(population[j]))
-        pairs(population, shadow, self.op, args)
+        pairs(population, shadow, self.op, **xt)
 
 def samplex(n, m, x):
     s = list(set(range(n)) - set(x))
     return list(np.random.choice(s, m, False))
 
-def simpleMove(ind, args):
-    keyx = args['x']
-    keyv = args['v']
-    dt = args['dt']
+def simpleMove(ind, **xt):
+    keyx = xt['keyx']
+    keyv = xt['keyv']
+    dt = xt['dt']
     ind[keyx] += dt * ind[keyv]
 

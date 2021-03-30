@@ -8,16 +8,16 @@ class competitiveSwarmOptimizer(algorithm):
         algorithm.__init__(self)
         self.socialFactor = None
         self.delta = None
-        algorithm.initAttributes(self, args)
+        algorithm.initAttributes(self, **args)
 
     @staticmethod
-    def tournament(pair, args):
+    def tournament(pair, **xt):
         ind1, ind2 = pair
-        dim = args['env']['target'].dimension
-        x = args['env']['x']
-        phi = evalf(args['env']['socialFactor'], [args, ind1, ind2])
+        dim = xt['target'].dimension
+        x = xt['x']
+        phi = evalf(xt['socialFactor'], inds=[ind1, ind2], **xt)
 
-        if args['env']['goal'].isBetter(ind1['f'], ind2['f']):
+        if xt['goal'].isBetter(ind1['f'], ind2['f']):
             winner, loser = ind1, ind2
         else:
             winner, loser = ind2, ind1
@@ -30,10 +30,10 @@ class competitiveSwarmOptimizer(algorithm):
 
     def start(self):
         algorithm.start(self, "socialFactor x", "x f v reEval")
-        foreach(self.population, self.opInit, self.args(key='x'))
+        foreach(self.population, self.opInit, key='x', **self.env)
         self.evaluateAll()
         vel = self.delta * (self.target.bounds[1] - self.target.bounds[0])
-        foreach(self.population, fillAttribute(randomRealVector(dim=self.target.dimension, bounds=[-vel, vel])), self.args(key='v'))
+        foreach(self.population, fillAttribute(randomRealVector(dim=self.target.dimension, bounds=[-vel, vel])), key='v', **self.env)
         self.compete = shuffled(self.tournament)
 
     def __call__(self):
@@ -41,5 +41,5 @@ class competitiveSwarmOptimizer(algorithm):
         while not self.stop(self.env):
             self.newGeneration()
             self.env['x'] = reducePop(self.population, lambda x: x['x'], np.add, lambda x: x / self.popSize)
-            self.compete(self.population, self.args()) 
-            evaluate(self.population, self.args(keyx='x', keyf='f', reEval='reEval'))
+            self.compete(self.population, **self.env) 
+            evaluate(self.population, keyx='x', keyf='f', reEval='reEval', **self.env)

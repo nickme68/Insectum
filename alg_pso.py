@@ -12,29 +12,29 @@ class particleSwarmOptimization(algorithm):
         self.alphabeta = None
         self.gamma = None
         self.delta = None
-        algorithm.initAttributes(self, args)
+        algorithm.initAttributes(self, **args)
 
     @staticmethod
-    def updateVel(ind, args):
-        gamma = evalf(args['env']['gamma'], [args, ind])
-        alpha, beta = evalf(args['env']['alphabeta'], [args, ind])
-        g = args['env']['g']
+    def updateVel(ind, **xt):
+        gamma = evalf(xt['gamma'], inds=[ind], **xt)
+        alpha, beta = evalf(xt['alphabeta'], inds=[ind], **xt)
+        g = xt['g']
         ind['v'] = gamma * ind['v'] + alpha * (ind['p'] - ind['x']) + beta * (g - ind['x'])
 
     @staticmethod
-    def updateBestPosition(ind, args):
-        goal = args['env']['goal']
+    def updateBestPosition(ind, **xt):
+        goal = xt['goal']
         if goal.isBetter(ind['fNew'], ind['f']):
             ind['p'] = ind['x'].copy()
             ind['f'] = ind['fNew']
 
     def start(self):
         algorithm.start(self, "alphabeta gamma g", "x f fNew v p")
-        foreach(self.population, self.opInit, self.args(key='x'))
-        foreach(self.population, copyAttribute, self.args(keyFrom='x', keyTo='p'))
+        foreach(self.population, self.opInit, key='x', **self.env)
+        foreach(self.population, copyAttribute, keyFrom='x', keyTo='p', **self.env)
         self.evaluateAll()
         vel = self.delta * (self.target.bounds[1] - self.target.bounds[0])
-        foreach(self.population, fillAttribute(randomRealVector(dim=self.target.dimension, bounds=[-vel, vel])), self.args(key='v'))
+        foreach(self.population, fillAttribute(randomRealVector(dim=self.target.dimension, bounds=[-vel, vel])), key='v', **self.env)
 
     def __call__(self):
         self.start()
@@ -42,18 +42,18 @@ class particleSwarmOptimization(algorithm):
             self.newGeneration()
             op = lambda x, y: x if self.goal.isBetter(x[1], y[1]) else y
             self.env['g'] = reducePop(self.population, lambda x: (x['p'], x['f']), op, lambda x: x[0])
-            foreach(self.population, self.updateVel, self.args())
+            foreach(self.population, self.updateVel, **self.env)
             if self.opLimitVel != None:
-                foreach(self.population, self.opLimitVel, self.args(key='v'))
-            foreach(self.population, simpleMove, self.args(x='x', v='v', dt=1.0))
+                foreach(self.population, self.opLimitVel, key='v', **self.env)
+            foreach(self.population, simpleMove, keyx='x', keyv='v', dt=1.0, **self.env)
             self.evaluateAll(keyf='fNew')
-            foreach(self.population, self.updateBestPosition, self.args())
+            foreach(self.population, self.updateBestPosition, **self.env)
 
 class randomAlphaBeta:
     def __init__(self, a, b=0):
         self.alpha = a
         self.beta = b if b > 0 else a
-    def __call__(self, args):
+    def __call__(self, **xt):
         a = random() * self.alpha
         b = random() * self.beta
         return a, b
@@ -61,7 +61,7 @@ class randomAlphaBeta:
 class linkedAlphaBeta:
     def __init__(self, t):
         self.total = t
-    def __call__(self, args):
+    def __call__(self, **xt):
         a = random() * self.total
         b = self.total - a
         return a, b
@@ -69,18 +69,18 @@ class linkedAlphaBeta:
 class maxAmplitude:
     def __init__(self, amax):
         self.amax = amax
-    def __call__(self, ind, args):
-        key = args['key']
+    def __call__(self, ind, **xt):
+        key = xt['key']
         a = np.linalg.norm(ind[key])
-        amax = evalf(self.amax, [args, ind])
+        amax = evalf(self.amax, inds=[ind], **xt)
         if a > amax:
             ind[key] *= amax / a
 
 class fixedAmplitude:
     def __init__(self, ampl):
         self.ampl = ampl
-    def __call__(self, ind, args):
-        key = args['key']
+    def __call__(self, ind, **xt):
+        key = xt['key']
         a = np.linalg.norm(ind[key])
-        ampl = evalf(self.ampl, [args, ind])
+        ampl = evalf(self.ampl, inds=[ind], **xt)
         ind[key] *= ampl / a
