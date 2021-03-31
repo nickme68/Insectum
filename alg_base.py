@@ -19,14 +19,17 @@ class algorithm:
         self.env = None
         self.population = None
         self.additionalProcedures = []
+        self.timer = None
     def initAttributes(self, **args):
         self.__dict__.update(args)
     def addProcedure(self, proc):
         self.additionalProcedures.append(proc)
     def start(self, envAttrs, indAttrs, shadows = ""):
+        if self.timer != None:
+            self.timer.startGlobal()
         self.goal = getGoal(self.goal)
         # environment
-        keys = ["target", "goal", "time"] + envAttrs.split()
+        keys = ["target", "goal", "time", "timer"] + envAttrs.split()
         self.env = dict(zip(keys, [None] * len(keys)))
         for key in keys:
             if key in self.__dict__:
@@ -41,13 +44,13 @@ class algorithm:
         # shadow populations
         for sh in shadows.split():
             self.__dict__[sh] = [ind.copy() for i in range(self.popSize)]
-    def evaluateAll(self, keyx='x', keyf='f'):
-        evaluate(self.population, keyx=keyx, keyf=keyf, **self.env) 
     def newGeneration(self):
         self.env['time'] += 1
         for proc in self.additionalProcedures:
             proc(self.population, self.env)
-
+    def finish(self):
+        if self.timer != None:
+            self.timer.stopGlobal()
 # Common stuff
 
 class fillAttribute:
@@ -96,7 +99,6 @@ class timedOp:
         t = xt['time']
         if t % self.dt == 0:
             self.method(inds, **xt)
-
 
 class shuffled:
     def __init__(self, op):

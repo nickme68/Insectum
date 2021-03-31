@@ -13,17 +13,18 @@ class differentialEvolution(algorithm):
     def start(self):
         algorithm.start(self, "", "x f", shadows="probes")
         foreach(self.population, self.opInit, key='x', **self.env)
-        self.evaluateAll()
+        evaluate(self.population, keyx='x', keyf='f', **self.env)
 
     def __call__(self):
         self.start()
         while not self.stop(self.env):
             self.newGeneration()
             pop2ind(self.probes, self.population, self.opMakeProbe, 
-                keyx='x', keyf='f', **self.env)
-            pairs(self.probes, self.population, self.opCrossover, key='x', **self.env)
-            evaluate(self.probes, keyx='x', keyf='f', **self.env)
-            pairs(self.population, self.probes, self.opSelect, key='f', **self.env)
+                keyx='x', keyf='f', _t='makeprobes', **self.env)
+            pairs(self.probes, self.population, self.opCrossover, key='x', _t='crossover', **self.env)
+            evaluate(self.probes, keyx='x', keyf='f', _t='evaluate', **self.env)
+            pairs(self.population, self.probes, self.opSelect, key='f', _t='select', **self.env)
+        self.finish()
 
 def argbestDE(population, **xt):
     keyf = xt['keyf']

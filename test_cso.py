@@ -8,5 +8,10 @@ s = ins.stopMaxGeneration(1000, metrics=m)
 cso = ins.competitiveSwarmOptimizer(target=t, stop=s, popSize=20, delta=0.01)
 cso.socialFactor = 0.1
 
+tm = ins.timer(m)
+cso.timer = tm
+
 cso()
+
+m.showTiming()
 m.show(log=True)

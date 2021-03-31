@@ -1,13 +1,14 @@
 import numpy as np
 import insectae as ins
 
-g = ins.toMin()
-m = ins.metrics(goal=g, verbose=200)
+m = ins.metrics(verbose=200)
 #t = ins.binaryTarget(metrics=m, target=lambda x: np.sum(x), dimension=100)
 t = ins.realTarget(metrics=m, target=lambda x: np.sum(np.square(x)), dimension=10, bounds=[-10, 10])
 s = ins.stopMaxGeneration(1000, metrics=m)
 
-ga = ins.geneticAlgorithm(target=t, goal=g, stop=s, popSize=20)
+tm = ins.timer(m)
+
+ga = ins.geneticAlgorithm(target=t, stop=s, popSize=20, timer=tm)
 
 ga.opSelect = ins.shuffled(ins.probOp(ins.tournament(pwin=0.9), 0.5))
 #ga.opSelect = ins.selected(ins.probOp(ins.tournament(pwin=0.9), 0.5))
@@ -26,4 +27,6 @@ ga.opMutate = ins.realMutation(delta=ins.expCool(0.5, 0.99))
 #ga.opMutate = ins.binaryMutation(prob=ins.expCool(0.1, 0.99)) #ins.expCool(0.1, 0.99))
 
 ga()
+
+m.showTiming()
 m.show(log=True) 

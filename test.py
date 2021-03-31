@@ -1,12 +1,8 @@
 import numpy as np
 from functools import reduce
 
-def f(**args):
-    for a in args.keys():
-        print(a, "->", args[a])
+x = 12.3456
+print("x"+"{:6.2f}".format(x))
 
-def g(**args):
-    f(x=3, **args)        
-
-g(a=1, b=2)
-
+k = 7
+print(("{:"+str(k)+"s}").format("abc")+"!")

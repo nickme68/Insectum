@@ -1,7 +1,7 @@
 from random import random
 from numpy import exp
 from alg_base import algorithm, evalf, copyAttribute
-from patterns import foreach  
+from patterns import foreach, evaluate  
 import copy
 
 class simulatedAnnealing(algorithm):
@@ -14,17 +14,18 @@ class simulatedAnnealing(algorithm):
     def start(self):
         algorithm.start(self, "theta", "x xNew f fNew")
         foreach(self.population, self.opInit, key='x', **self.env) 
-        self.evaluateAll()
+        evaluate(self.population, keyx='x', keyf='f', **self.env)
 
     def __call__(self):
         self.start()
         while not self.stop(self.env):
             self.newGeneration()
-            foreach(self.population, copyAttribute, keyFrom='x', keyTo='xNew', **self.env) 
-            foreach(self.population, self.opMove, key='xNew', **self.env) 
-            self.evaluateAll(keyx='xNew', keyf='fNew')
-            foreach(self.population, self.accept, **self.env) 
-            
+            foreach(self.population, copyAttribute, keyFrom='x', keyTo='xNew', _t='copy', **self.env) 
+            foreach(self.population, self.opMove, key='xNew', _t='move', **self.env) 
+            evaluate(self.population, keyx='xNew', keyf='fNew', _t='evaluate', **self.env)
+            foreach(self.population, self.accept, _t='accept', **self.env) 
+        self.finish()
+
     @staticmethod
     def accept(ind, **xt):
         theta = evalf(xt['theta'], inds=[ind], **xt) 

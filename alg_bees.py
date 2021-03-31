@@ -38,10 +38,11 @@ class beesAlgorithm(algorithm):
         self.start()
         while not self.stop(self.env):
             self.newGeneration()
-            foreach(self.population, self.opFlight, key='x', **self.env)
-            self.evaluateAll()
-            self.env['places'] = reducePop(self.population, self.extractOp, self.reduceOp, lambda x: x, initVal = self.env['places'])
+            foreach(self.population, self.opFlight, key='x', _t='flight', **self.env)
+            evaluate(self.population, keyx='x', keyf='f', _t='evaluate', **self.env)
+            self.env['places'] = reducePop(self.population, self.extractOp, self.reduceOp, lambda x: x, initVal = self.env['places'], _t='update', **self.env)
             self.sortPlaces()
+        self.finish()
 
 class beeFlight: 
     def __init__(self, opLocal, opGlobal):

@@ -2,7 +2,7 @@ import numpy as np
 from random import random
 from targets import randomRealVector
 from alg_base import algorithm, evalf, fillAttribute, copyAttribute, simpleMove
-from patterns import foreach, reducePop 
+from patterns import foreach, reducePop, evaluate
 import copy
 
 class particleSwarmOptimization(algorithm):
@@ -32,7 +32,7 @@ class particleSwarmOptimization(algorithm):
         algorithm.start(self, "alphabeta gamma g", "x f fNew v p")
         foreach(self.population, self.opInit, key='x', **self.env)
         foreach(self.population, copyAttribute, keyFrom='x', keyTo='p', **self.env)
-        self.evaluateAll()
+        evaluate(self.population, keyx='x', keyf='f', **self.env)
         vel = self.delta * (self.target.bounds[1] - self.target.bounds[0])
         foreach(self.population, fillAttribute(randomRealVector(dim=self.target.dimension, bounds=[-vel, vel])), key='v', **self.env)
 
@@ -41,13 +41,14 @@ class particleSwarmOptimization(algorithm):
         while not self.stop(self.env):
             self.newGeneration()
             op = lambda x, y: x if self.goal.isBetter(x[1], y[1]) else y
-            self.env['g'] = reducePop(self.population, lambda x: (x['p'], x['f']), op, lambda x: x[0])
-            foreach(self.population, self.updateVel, **self.env)
+            self.env['g'] = reducePop(self.population, lambda x: (x['p'], x['f']), op, lambda x: x[0], _t='reduce', **self.env)
+            foreach(self.population, self.updateVel, _t='updatevel', **self.env)
             if self.opLimitVel != None:
-                foreach(self.population, self.opLimitVel, key='v', **self.env)
-            foreach(self.population, simpleMove, keyx='x', keyv='v', dt=1.0, **self.env)
-            self.evaluateAll(keyf='fNew')
-            foreach(self.population, self.updateBestPosition, **self.env)
+                foreach(self.population, self.opLimitVel, key='v', _t='limitvel', **self.env)
+            foreach(self.population, simpleMove, keyx='x', keyv='v', dt=1.0, _t='move', **self.env)
+            evaluate(self.population, keyx='x', keyf='fNew', _t='evaluate', **self.env)
+            foreach(self.population, self.updateBestPosition, _t='updatebest', **self.env)
+        self.finish()
 
 class randomAlphaBeta:
     def __init__(self, a, b=0):

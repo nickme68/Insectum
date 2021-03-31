@@ -17,5 +17,10 @@ glob = ins.fillAttribute(ins.randomRealVector(t.dimension, t.bounds))
 #glob = im.fillAttribute(im.randomBinaryVector())
 bees.opFlight = ins.beeFlight(loc, glob) 
 
+tm = ins.timer(m)
+bees.timer = tm
+
 bees()
+
+m.showTiming()
 m.show(log=True)

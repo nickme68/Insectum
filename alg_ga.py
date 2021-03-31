@@ -1,6 +1,6 @@
 from random import random, randrange
 from alg_base import algorithm, evalf
-from patterns import foreach  
+from patterns import foreach, evaluate  
 import copy
 
 class geneticAlgorithm(algorithm):
@@ -14,16 +14,17 @@ class geneticAlgorithm(algorithm):
     def start(self):
         algorithm.start(self, "", "x f")
         foreach(self.population, self.opInit, key='x', **self.env) 
-        self.evaluateAll()
+        evaluate(self.population, keyx='x', keyf='f', **self.env)
 
     def __call__(self):
         self.start()
         while not self.stop(self.env):
             self.newGeneration()
-            self.opSelect(self.population, key='f', **self.env) 
-            self.opCrossover(self.population, key='x', **self.env)
-            foreach(self.population, self.opMutate, key='x', **self.env) 
-            self.evaluateAll()
+            self.opSelect(self.population, key='f', _t='select', **self.env) 
+            self.opCrossover(self.population, key='x', _t='cross', **self.env)
+            foreach(self.population, self.opMutate, key='x', _t='mutate', **self.env) 
+            evaluate(self.population, keyx='x', keyf='f', _t='evaluate', **self.env)    
+        self.finish()        
 
 class tournament:
     def __init__(self, pwin):

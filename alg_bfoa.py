@@ -2,7 +2,7 @@ import numpy as np
 from random import random
 from targets import randomRealVector
 from alg_base import algorithm, evalf, fillAttribute, simpleMove, copyAttribute
-from patterns import foreach 
+from patterns import foreach, evaluate, signals
 
 class bacterialForagingAlgorithm(algorithm):
     def __init__(self, **args):
@@ -41,7 +41,7 @@ class bacterialForagingAlgorithm(algorithm):
     def start(self):
         algorithm.start(self, "vel gamma probRotate", "x f fNew fs fTotal v")
         foreach(self.population, self.opInit, key='x', **self.env)
-        self.evaluateAll()
+        evaluate(self.population, keyx='x', keyf='f', **self.env)
         foreach(self.population, self.initVel, **self.env)
         foreach(self.population, copyAttribute, keyFrom='f', keyTo='fTotal', **self.env)
         foreach(self.population, fillAttribute(0.0), key='fs', **self.env)
@@ -50,14 +50,15 @@ class bacterialForagingAlgorithm(algorithm):
         self.start()
         while not self.stop(self.env):
             self.newGeneration()
-            foreach(self.population, simpleMove, keyx='x', keyv='v', dt=1.0, **self.env)
-            self.evaluateAll(keyf='fNew')
-            self.opSignals(self.population, keyx='x', keys='fs', **self.env)
-            foreach(self.population, simpleMove, keyx='fNew', keyv='fs', dt=self.mu, **self.env)
-            foreach(self.population, self.rotate, **self.env)
-            foreach(self.population, self.updateF, **self.env)
-            self.opSelect(self.population, key='fTotal', **self.env)
-            foreach(self.population, self.opDisperse, key='x', **self.env)
+            foreach(self.population, simpleMove, keyx='x', keyv='v', dt=1.0, _t="move", **self.env)
+            evaluate(self.population, keyx='x', keyf='fNew', _t="evaluate", **self.env) 
+            self.opSignals(self.population, keyx='x', keys='fs', _t="signals", **self.env)
+            foreach(self.population, simpleMove, keyx='fNew', keyv='fs', dt=self.mu, _t="newf", **self.env)
+            foreach(self.population, self.rotate, _t="rotate", **self.env)
+            foreach(self.population, self.updateF, _t="updatef", **self.env)
+            self.opSelect(self.population, key='fTotal', _t="select", **self.env)
+            foreach(self.population, self.opDisperse, key='x', _t="disperse", **self.env)
+        self.finish()
 
 def randomDirectedVector(dim, length):
     vec = np.random.normal(0.0, 1.0, size=dim)
@@ -79,19 +80,7 @@ class calcSignals:
             self.reduce = R[reduce]
         self.metrics = metrics
     def __call__(self, population, **xt):
-        keyx = xt['keyx']
-        keys = xt['keys']
-        n = len(population)
-        D = np.zeros((n, n))
-        for i in range(n - 1):
-            for j in range(i+1, n):
-                D[i, j] = D[j, i] = self.metrics(population[i][keyx], population[j][keyx])
-        for i in range(n):
-            ind = population[i]
-            S = np.zeros(n)
-            for j in range(n):
-                S[j] = self.shape(D[i][j], inds=[population[i], population[j]], **xt) 
-            ind[keys] = self.reduce(S)
+        signals(population, self.metrics, self.shape, self.reduce, **xt)
 
 # Different signal shapes
 
