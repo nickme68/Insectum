@@ -11,7 +11,7 @@ de = ins.differentialEvolution(target=t, goal=g, stop=s, popSize=20)
 #tm = ins.timer(m)
 #de.timer = tm
 
-de.opMakeProbe = ins.probesClassic(0.8) #probesBest2 #probesCur2Best #probesBest #probesClassic
+de.opMakeProbe = ins.probeClassic(0.8) #probesBest2 #probesCur2Best #probesBest #probesClassic
 de.opCrossover = ins.uniformCrossover(0.9)
 de.opSelect = ins.tournament(1.0)
 

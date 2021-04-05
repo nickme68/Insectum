@@ -1,7 +1,7 @@
 import numpy as np
 from random import random
 from targets import randomRealVector
-from alg_base import algorithm, evalf, fillAttribute, simpleMove, copyAttribute
+from alg_base import algorithm, evalf, simpleMove, copyAttribute
 from patterns import foreach, evaluate, reducePop
 
 class beesAlgorithm(algorithm):

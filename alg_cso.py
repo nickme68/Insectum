@@ -1,6 +1,6 @@
 import numpy as np
 from targets import randomRealVector
-from alg_base import algorithm, evalf, fillAttribute, shuffled
+from alg_base import algorithm, evalf, shuffled
 from patterns import evaluate, foreach, reducePop 
 
 class competitiveSwarmOptimizer(algorithm):
@@ -33,14 +33,15 @@ class competitiveSwarmOptimizer(algorithm):
         foreach(self.population, self.opInit, key='x', **self.env)
         evaluate(self.population, keyx='x', keyf='f', **self.env)
         vel = self.delta * (self.target.bounds[1] - self.target.bounds[0])
-        foreach(self.population, fillAttribute(randomRealVector(dim=self.target.dimension, bounds=[-vel, vel])), key='v', **self.env)
+        foreach(self.population, randomRealVector(-vel, vel), key='v', **self.env)
         self.compete = shuffled(self.tournament)
 
     def __call__(self):
         self.start()
         while not self.stop(self.env):
             self.newGeneration()
-            self.env['x'] = reducePop(self.population, lambda x: x['x'], np.add, lambda x: x / self.popSize, _t='reduce', **self.env)
+            ext, post = lambda x: x['x'], lambda x: x / self.popSize
+            self.env['x'] = reducePop(self.population, ext, np.add, post, _t='reduce', **self.env)
             self.compete(self.population, _t='compete', **self.env) 
             evaluate(self.population, keyx='x', keyf='f', reEval='reEval', _t='evaluate', **self.env)
         self.finish()

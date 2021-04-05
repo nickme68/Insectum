@@ -1,7 +1,7 @@
 import numpy as np
 from random import random
 from targets import randomRealVector
-from alg_base import algorithm, evalf, fillAttribute, copyAttribute, simpleMove
+from alg_base import algorithm, evalf, copyAttribute, simpleMove
 from patterns import foreach, reducePop, evaluate
 import copy
 
@@ -34,14 +34,16 @@ class particleSwarmOptimization(algorithm):
         foreach(self.population, copyAttribute, keyFrom='x', keyTo='p', **self.env)
         evaluate(self.population, keyx='x', keyf='f', **self.env)
         vel = self.delta * (self.target.bounds[1] - self.target.bounds[0])
-        foreach(self.population, fillAttribute(randomRealVector(dim=self.target.dimension, bounds=[-vel, vel])), key='v', **self.env)
+        foreach(self.population, randomRealVector(-vel, vel), key='v', **self.env)
 
     def __call__(self):
         self.start()
         while not self.stop(self.env):
             self.newGeneration()
+            ext = lambda x: (x['p'], x['f'])
             op = lambda x, y: x if self.goal.isBetter(x[1], y[1]) else y
-            self.env['g'] = reducePop(self.population, lambda x: (x['p'], x['f']), op, lambda x: x[0], _t='reduce', **self.env)
+            post = lambda x: x[0]
+            self.env['g'] = reducePop(self.population, ext, op, post, _t='reduce', **self.env)
             foreach(self.population, self.updateVel, _t='updatevel', **self.env)
             if self.opLimitVel != None:
                 foreach(self.population, self.opLimitVel, key='v', _t='limitvel', **self.env)

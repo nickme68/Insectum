@@ -40,6 +40,8 @@ def reducePop(population, extract, op, post, **xt):
         return post(ft.reduce(op, map(lambda ind: extract(ind), population), xt['initVal']))
     return post(ft.reduce(op, map(lambda ind: extract(ind), population)))
 
+# calculating distances between all individuals
+# for each individual convert distances to signals and reduce them to single value 
 @timing
 def signals(population, metrics, shape, reduce, **xt):
     keyx = xt['keyx']

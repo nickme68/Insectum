@@ -33,7 +33,7 @@ def argbestDE(population, **xt):
     else:
         return max(enumerate(population), key=lambda x: x[1][keyf])[0]
     
-class probesClassic:
+class probeClassic:
     def __init__(self, weight):
         self.weight = weight
     def __call__(self, ind, population, **xt):
@@ -44,7 +44,7 @@ class probesClassic:
         a, b, c = [population[i] for i in S]
         ind[keyx] = a[keyx] + weight * (b[keyx] - c[keyx])
 
-class probesBest:
+class probeBest:
     def __init__(self, weight):
         self.weight = weight
     def __call__(self, ind, population, xt):
@@ -56,7 +56,7 @@ class probesBest:
         a, b, c = [population[i] for i in S]
         ind[keyx] = a[keyx] + weight * (b[keyx] - c[keyx])
 
-class probesCur2Best:
+class probeCur2Best:
     def __init__(self, weight):
         self.weight = weight
     def __call__(self, ind, population, **xt):
@@ -68,7 +68,7 @@ class probesCur2Best:
         cur, a, b, c = [population[i] for i in S]
         ind[keyx] = cur[keyx] + weight * (a[keyx] - cur[keyx] + b[keyx] - c[keyx])
 
-class probesBest2:
+class probeBest2:
     def __init__(self, weight):
         self.weight = weight
     def __call__(self, ind, population, **xt):
@@ -80,7 +80,7 @@ class probesBest2:
         a, b, c, d, e = [population[i] for i in S]
         ind[keyx] = a[keyx] + weight * (b[keyx] - c[keyx] + d[keyx] - e[keyx])
 
-class probesRandom5:
+class probeRandom5:
     def __init__(self, weight):
         self.weight = weight
     def __call__(self, ind, population, **xt):

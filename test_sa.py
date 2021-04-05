@@ -11,7 +11,7 @@ stop = ins.stopMaxGeneration(1000, metrics=m)
 #stop = ins.stopValue(98, 1000, metrics=m)
 
 sa = ins.simulatedAnnealing(target=target, goal="max", stop=stop, popSize=20)
-sa.theta=ins.expCool(1.0, 0.99)
+sa.theta=ins.hypCool(1.0, 1.0) #expCool(1.0, 0.99)
 
 #sa.opMove = ins.realMutation(delta=ins.hypCool(0.1, 0.07))
 sa.opMove = ins.binaryMutation(prob=0.01) #im.expCool(0.1, 0.99))
@@ -21,4 +21,4 @@ sa.timer = tm
 
 sa()
 m.showTiming()
-#m.show(log=True) 
+m.show(log=True) 

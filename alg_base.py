@@ -40,7 +40,7 @@ class algorithm:
         ind = dict(zip(keys, [None] * len(keys)))
         self.population = [ind.copy() for i in range(self.popSize)]
         if self.opInit == None:
-            self.opInit = fillAttribute(self.target.defaultInit())
+            self.opInit = self.target.defaultInit()
         # shadow populations
         for sh in shadows.split():
             self.__dict__[sh] = [ind.copy() for i in range(self.popSize)]
@@ -51,6 +51,7 @@ class algorithm:
     def finish(self):
         if self.timer != None:
             self.timer.stopGlobal()
+
 # Common stuff
 
 class fillAttribute:
@@ -59,7 +60,7 @@ class fillAttribute:
     def __call__(self, ind, **xt):
         key = xt['key']
         if callable(self.op):
-            ind[key] = self.op(xt)
+            ind[key] = self.op(**xt)
         elif np.isscalar(self.op):
             ind[key] = self.op
         else:
@@ -104,8 +105,7 @@ class shuffled:
     def __init__(self, op):
         self.op = op
     def __call__(self, population, **xt):
-        popSize = len(population)
-        P = list(range(popSize))
+        P = list(range(len(population)))
         np.random.shuffle(P)
         neighbors(population, self.op, P, **xt)
 

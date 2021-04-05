@@ -84,7 +84,7 @@ class calcSignals:
 
 # Different signal shapes
 
-class signalClustering:
+class shapeClustering:
     def __init__(self, d, direction):
         self.d = d
         self.direction = -1 if direction == "min" else 1

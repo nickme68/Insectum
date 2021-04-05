@@ -42,13 +42,13 @@ class binaryTarget(target):
         target.__init__(self)
         target.initAttributes(self, encoding="binary", **args)
     def defaultInit(self): 
-        return randomBinaryVector(self.dimension) 
+        return randomBinaryVector()
   
 class randomBinaryVector:
-    def __init__(self, dim):
-        self.dim = dim
-    def __call__(self, args): 
-        return np.random.randint(2, size=self.dim)
+    def __call__(self, ind, **xt):
+        dim = xt['target'].dimension
+        key = xt['key'] 
+        ind[key] = np.random.randint(2, size=dim)
 
 # real valued target
 
@@ -58,15 +58,20 @@ class realTarget(target):
         self.bounds = None 
         target.initAttributes(self, encoding="real", **args)
     def defaultInit(self):
-        return randomRealVector(self.dimension, self.bounds)
+        return randomRealVector()
 
 class randomRealVector:
-    def __init__(self, dim, bounds):
-        self.dim = dim
-        self.bounds = bounds
-    def __call__(self, args):
-        low, high = self.bounds
-        return np.random.uniform(low=low, high=high, size=self.dim)
+    def __init__(self, *args):
+        self.bounds = None
+        if len(args) == 1:
+            self.bounds = [-args[0], args[0]]
+        elif len(args) == 2:
+            self.bounds = [args[0], args[1]]
+    def __call__(self, ind, **xt):
+        dim = xt['target'].dimension
+        low, high = self.bounds if self.bounds != None else xt['target'].bounds
+        key = xt['key'] 
+        ind[key] = low + (high - low) * np.random.rand(dim)
 
 # permutation task
 
@@ -75,12 +80,12 @@ class permutationTarget(target):
         target.__init__(self)
         target.initAttributes(self, encoding="permutation", **args)
     def defaultInit(self):
-        return randomPermutation(self.dimension)
+        return randomPermutation()
 
 class randomPermutation:
-    def __init__(self, dim):
-        self.dim = dim
-    def __call__(self, args):
-        x = np.array(list(range(self.dim)))
-        np.random.shuffle(x)
-        return x
+    def __call__(self, ind, **xt):
+        dim = xt['target'].dimension
+        key = xt['key'] 
+        ind[key] = np.array(list(range(dim)))
+        np.random.shuffle(ind[key])
+

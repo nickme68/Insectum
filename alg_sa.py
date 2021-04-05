@@ -56,8 +56,6 @@ class hypCool:
         self.gen = 0
     def __call__(self, **xt):
         gen = xt['time']
-        if gen == 0:
-            return self.x
         if gen > self.gen:
             self.gen = gen
             self.x = self.x0 / gen ** self.deg
