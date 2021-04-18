@@ -5,12 +5,16 @@ class toMax:
         return x > y
     def getDir(self):
         return "max"
+    def __eq__(self, s):
+        return s == "max"
 
 class toMin:
     def isBetter(self, x, y):
         return x < y
     def getDir(self):
         return "min"
+    def __eq__(self, s):
+        return s == "min"
 
 def getGoal(g):
     if g == "min":

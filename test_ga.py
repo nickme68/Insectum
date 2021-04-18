@@ -8,7 +8,9 @@ s = ins.stopMaxGeneration(1000, metrics=m)
 
 tm = ins.timer(m)
 
-ga = ins.geneticAlgorithm(target=t, stop=s, popSize=20, timer=tm)
+ga = ins.geneticAlgorithm(target=t, stop=s, popSize=40, timer=tm)
+
+ga.flags.append("ranks")
 
 ga.opSelect = ins.shuffled(ins.probOp(ins.tournament(pwin=0.9), 0.5))
 #ga.opSelect = ins.selected(ins.probOp(ins.tournament(pwin=0.9), 0.5))
@@ -22,11 +24,34 @@ ga.opCrossover = ins.shuffled(x)
 #ga.opCrossover = ins.shuffled(ins.probOp(x1, 0.1))
 ga.opCrossover = ins.shuffled(x)
 
-ga.opMutate = ins.realMutation(delta=ins.expCool(0.5, 0.99))
+class binaryRanks:
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+    def __call__(self, **xt):
+        r = xt['inds'][0]['_rank']
+        ps = xt['popSize']
+        if r / ps < 0.5: 
+            return self.a 
+        return self.b
+        #return self.a + (self.b - self.a) * (r + 1) / ps
+
+class expRanks:
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+    def __call__(self, **xt):
+        r = xt['inds'][0]['_rank']
+        ps = xt['popSize']
+        return self.a * (self.b / self.a) ** (r / (ps - 1))
+
+ga.opMutate = ins.realMutation(delta=expRanks(0.0000000000001, 1))
+
+#ga.opMutate = ins.realMutation(delta=ins.expCool(0.5, 0.99))
 #ga.opMutate = ins.realMutation(delta=ins.hypCool(0.1, 0.25))
 #ga.opMutate = ins.binaryMutation(prob=ins.expCool(0.1, 0.99)) #ins.expCool(0.1, 0.99))
 
-ga()
+ga.run()
 
-m.showTiming()
+#m.showTiming()
 m.show(log=True) 

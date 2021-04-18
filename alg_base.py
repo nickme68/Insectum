@@ -20,37 +20,65 @@ class algorithm:
         self.population = None
         self.additionalProcedures = []
         self.timer = None
+        self.flags = []
+
     def initAttributes(self, **args):
         self.__dict__.update(args)
+
     def addProcedure(self, proc):
         self.additionalProcedures.append(proc)
-    def start(self, envAttrs, indAttrs, shadows = ""):
+
+    def checkKey(self, k):
+        if k[0] in '*&':
+            d = {'*':'_f', '&':'_x'}
+            self.env[d[k[0]]] = k[1:]
+            return k[1:]
+        return k
+
+    def start(self, envAttrs="", indAttrs="", shadows = ""):
         if self.timer != None:
             self.timer.startGlobal()
         self.goal = getGoal(self.goal)
         # environment
-        keys = ["target", "goal", "time", "timer"] + envAttrs.split()
+        keys = ["target", "goal", "time", "timer", "popSize", "_x", "_f"] + envAttrs.split()
         self.env = dict(zip(keys, [None] * len(keys)))
         for key in keys:
             if key in self.__dict__:
                 self.env[key] = self.__dict__[key]
         self.env['time'] = 0
         # population
-        keys = indAttrs.split()
+        keys = list(map(self.checkKey, indAttrs.split()))
         ind = dict(zip(keys, [None] * len(keys)))
         self.population = [ind.copy() for i in range(self.popSize)]
+        if "ranks" in self.flags:
+            for i in range(self.popSize):
+                self.population[i]["_rank"] = i 
+            self.additionalProcedures.append(sortPopulation)
         if self.opInit == None:
             self.opInit = self.target.defaultInit()
         # shadow populations
         for sh in shadows.split():
             self.__dict__[sh] = [ind.copy() for i in range(self.popSize)]
-    def newGeneration(self):
+
+    def startGeneration(self): 
         self.env['time'] += 1
         for proc in self.additionalProcedures:
-            proc(self.population, self.env)
-    def finish(self):
+            proc(self.population, **self.env)
+
+    def exit(self): 
         if self.timer != None:
             self.timer.stopGlobal()
+
+    def runGeneration(self): pass
+    def exitGeneration(self): pass
+
+    def run(self):
+        self.start()
+        while not self.stop(self.env):
+            self.startGeneration()
+            self.runGeneration()
+            self.exitGeneration()
+        self.exit()        
 
 # Common stuff
 
@@ -128,4 +156,16 @@ def simpleMove(ind, **xt):
     keyv = xt['keyv']
     dt = xt['dt']
     ind[keyx] += dt * ind[keyv]
+
+def sortPopulation(population, **xt):
+    keyf = xt['_f']
+    P = list(map(lambda x: x['_rank'], population))
+    if xt['goal'] == "min":
+        key = lambda x: population[x][keyf]
+    else:
+        key = lambda x: -population[x][keyf]
+    P.sort(key=key)
+    for i in range(len(population)):
+        population[P[i]]['_rank'] = i
+
 

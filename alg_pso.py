@@ -29,28 +29,24 @@ class particleSwarmOptimization(algorithm):
             ind['f'] = ind['fNew']
 
     def start(self):
-        algorithm.start(self, "alphabeta gamma g", "x f fNew v p")
+        algorithm.start(self, "alphabeta gamma g", "&x f *fNew v p")
         foreach(self.population, self.opInit, key='x', **self.env)
         foreach(self.population, copyAttribute, keyFrom='x', keyTo='p', **self.env)
         evaluate(self.population, keyx='x', keyf='f', **self.env)
         vel = self.delta * (self.target.bounds[1] - self.target.bounds[0])
         foreach(self.population, randomRealVector(-vel, vel), key='v', **self.env)
 
-    def __call__(self):
-        self.start()
-        while not self.stop(self.env):
-            self.newGeneration()
-            ext = lambda x: (x['p'], x['f'])
-            op = lambda x, y: x if self.goal.isBetter(x[1], y[1]) else y
-            post = lambda x: x[0]
-            self.env['g'] = reducePop(self.population, ext, op, post, _t='reduce', **self.env)
-            foreach(self.population, self.updateVel, _t='updatevel', **self.env)
-            if self.opLimitVel != None:
-                foreach(self.population, self.opLimitVel, key='v', _t='limitvel', **self.env)
-            foreach(self.population, simpleMove, keyx='x', keyv='v', dt=1.0, _t='move', **self.env)
-            evaluate(self.population, keyx='x', keyf='fNew', _t='evaluate', **self.env)
-            foreach(self.population, self.updateBestPosition, _t='updatebest', **self.env)
-        self.finish()
+    def runGeneration(self):
+        ext = lambda x: (x['p'], x['f'])
+        op = lambda x, y: x if self.goal.isBetter(x[1], y[1]) else y
+        post = lambda x: x[0]
+        self.env['g'] = reducePop(self.population, ext, op, post, _t='reduce', **self.env)
+        foreach(self.population, self.updateVel, _t='updatevel', **self.env)
+        if self.opLimitVel != None:
+            foreach(self.population, self.opLimitVel, key='v', _t='limitvel', **self.env)
+        foreach(self.population, simpleMove, keyx='x', keyv='v', dt=1.0, _t='move', **self.env)
+        evaluate(self.population, keyx='x', keyf='fNew', _t='evaluate', **self.env)
+        foreach(self.population, self.updateBestPosition, _t='updatebest', **self.env)
 
 class randomAlphaBeta:
     def __init__(self, a, b=0):

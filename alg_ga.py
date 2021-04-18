@@ -12,19 +12,15 @@ class geneticAlgorithm(algorithm):
         algorithm.initAttributes(self, **args)
 
     def start(self):
-        algorithm.start(self, "", "x f")
+        algorithm.start(self, "", "&x *f")
         foreach(self.population, self.opInit, key='x', **self.env) 
         evaluate(self.population, keyx='x', keyf='f', **self.env)
 
-    def __call__(self):
-        self.start()
-        while not self.stop(self.env):
-            self.newGeneration()
-            self.opSelect(self.population, key='f', _t='select', **self.env) 
-            self.opCrossover(self.population, key='x', _t='cross', **self.env)
-            foreach(self.population, self.opMutate, key='x', _t='mutate', **self.env) 
-            evaluate(self.population, keyx='x', keyf='f', _t='evaluate', **self.env)    
-        self.finish()        
+    def runGeneration(self):
+        self.opSelect(self.population, key='f', _t='select', **self.env) 
+        self.opCrossover(self.population, key='x', _t='cross', **self.env)
+        foreach(self.population, self.opMutate, key='x', _t='mutate', **self.env) 
+        evaluate(self.population, keyx='x', keyf='f', _t='evaluate', **self.env)    
 
 class tournament:
     def __init__(self, pwin):

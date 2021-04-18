@@ -33,7 +33,7 @@ class metrics:
             if rec == []:
                 continue 
             x = np.array(rec)
-            if self.goal.getDir() == "min":
+            if self.goal == "min":
                 B.append(np.min(x))
             else:
                 B.append(np.max(x))

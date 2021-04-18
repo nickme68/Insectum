@@ -1,75 +1,82 @@
 import numpy as np
 from random import random
-from targets import randomRealVector
-from alg_base import algorithm, evalf, simpleMove, copyAttribute
-from patterns import foreach, evaluate, reducePop
+from alg_base import algorithm
+from patterns import foreach, evaluate, pop2ind
 
 class beesAlgorithm(algorithm):
     def __init__(self, **args):
         algorithm.__init__(self)
-        self.opFlight = None
-        self.opPlaceProbs = lambda x, y: None
-        self.plNum = None
+        self.beesNum = None
+        self.opLocal = None
+        self.opGlobal = None
+        self.opProbs = None
         self.probScout = None
+        self.opFly = None
         algorithm.initAttributes(self, **args)
-
-    def sortPlaces(self):
-        if self.goal.getDir() == "min":
-            self.env['places'].sort(key=lambda x: x['f'])
-        else:
-            self.env['places'].sort(key=lambda x: -x['f'])
+        self.flags.append("ranks")        
 
     def start(self):
-        algorithm.start(self, "places probs plNum", "x f p")
-        pl = {'x':None, 'f':None}
-        self.env['places'] = [pl.copy() for i in range(self.plNum + 1)]
-        foreach(self.env['places'], self.opInit, key='x', **self.env)
-        evaluate(self.env['places'], keyx='x', keyf='f', **self.env)
-        self.sortPlaces()
-        self.env['probs'] = self.opPlaceProbs(self.plNum, self.probScout)
+        algorithm.start(self, "", "&x *f")
+        bee = {'x':None, 'f':None, '_rank':None}
+        self.bees = [bee.copy() for i in range(self.beesNum)]
+        self.opFly = opFly(self.opProbs, self.opLocal, self.opGlobal, self.popSize, self.probScout)
+        foreach(self.population, self.opInit, key='x', **self.env)
+        evaluate(self.population, keyx='x', keyf='f', **self.env)
 
-    def reduceOp(self, x, y):
-        return [y[i] if x[i] == None or y[i] != None and self.goal.isBetter(y[i]['f'], x[i]['f']) else x[i] for i in range(len(x))]
+    @staticmethod
+    def updatePlace(place, bees, **xt):
+        for bee in bees:
+            if bee['_rank'] == place['_rank'] and xt['goal'].isBetter(bee['f'], place['f']):
+                place['f'] = bee['f']
+                place['x'] = bee['x'].copy()
 
-    def extractOp(self, ind):
-        return [{'x':ind['x'].copy(), 'f':ind['f']} if i == ind['p'] else None for i in range(self.plNum + 1)]
+    def runGeneration(self):
+        pop2ind(self.bees, self.population, self.opFly, key='x', _t='fly', **self.env)
+        evaluate(self.bees, keyx='x', keyf='f', _t='evaluate', **self.env)
+        pop2ind(self.population, self.bees, self.updatePlace, _t='update', **self.env)
 
-    def __call__(self):
-        self.start()
-        while not self.stop(self.env):
-            self.newGeneration()
-            foreach(self.population, self.opFlight, key='x', _t='flight', **self.env)
-            evaluate(self.population, keyx='x', keyf='f', _t='evaluate', **self.env)
-            self.env['places'] = reducePop(self.population, self.extractOp, self.reduceOp, lambda x: x, initVal = self.env['places'], _t='update', **self.env)
-            self.sortPlaces()
-        self.finish()
+class opFly:
+    def __init__(self, opProbs, opLocal, opGlobal, psize, pscout):
+        self.opLocal = opLocal
+        self.opGlobal = opGlobal
+        self.probs = opProbs(psize, pscout)
+    def __call__(self, bee, places, **xt):
+        r = random()
+        for pl in places:
+            pr = self.probs[pl['_rank']]
+            if r < pr:
+                bee['_rank'] = pl['_rank']
+                if pl['_rank'] == len(places) - 1:
+                    self.opGlobal(bee, **xt)
+                else:
+                    bee['x'] = pl['x'].copy()
+                    self.opLocal(bee, **xt)
+                return
+            r -= pr
 
-class beeFlight: 
-    def __init__(self, opLocal, opGlobal):
-        self.loc = opLocal
-        self.glob = opGlobal
-    def __call__(self, ind, **xt):
-        m = xt['plNum']
-        probs = xt['probs']
-        p = np.random.choice(range(m + 1), p=probs)
-        ind['p'] = p
-        if p < m:
-            ind['x'] = xt['places'][p]['x'].copy()
-            self.loc(ind, **xt)
-        else:
-            self.glob(ind, **xt)
-
-def uniformPlacesProbs(num, pscout):
-    probs = np.full(num + 1, (1 - pscout) / num )
-    probs[num] = pscout 
-    return probs   
+class uniformPlacesProbs:
+    def __call__(self, size, pscout):
+        probs = np.full(size, (1 - pscout) / (size - 1) )
+        probs[size - 1] = pscout
+        return probs
 
 class linearPlacesProbs:
     def __init__(self, elitism):
         self.elitism = elitism
-    def __call__(self, num, pscout):
-        a = self.elitism * (1 - pscout) * 2 / (num ** 2 - num)
-        b = (1 - pscout) / num + a * (num - 1) / 2
-        probs = -a * np.array(range(num + 1)) + b
-        probs[num] = pscout
+    def __call__(self, size, pscout):
+        a = self.elitism * (1 - pscout) * 2 / ((size - 1) * (size - 2))
+        b = (1 - pscout) / (size - 1) + a * (size - 2) / 2
+        probs = -a * np.array(range(size)) + b
+        probs[size - 1] = pscout
         return probs
+
+class binaryPlacesProbs:
+    def __init__(self, rho, elitism):
+        self.rho = rho
+        self.mu = 1 / (1 - elitism)
+    def __call__(self, size, pscout):
+        me = int((size - 1) * self.rho)
+        mo = size - 1 - me
+        pe = (1 - pscout) / (me + mo / self.mu)
+        po = pe / self.mu
+        return np.array([pe] * me + [po] * mo + [pscout])

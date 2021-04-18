@@ -29,19 +29,15 @@ class competitiveSwarmOptimizer(algorithm):
         loser['x'] += loser['v']
 
     def start(self):
-        algorithm.start(self, "socialFactor x", "x f v reEval")
+        algorithm.start(self, "socialFactor x", "&x *f v reEval")
         foreach(self.population, self.opInit, key='x', **self.env)
         evaluate(self.population, keyx='x', keyf='f', **self.env)
         vel = self.delta * (self.target.bounds[1] - self.target.bounds[0])
         foreach(self.population, randomRealVector(-vel, vel), key='v', **self.env)
         self.compete = shuffled(self.tournament)
 
-    def __call__(self):
-        self.start()
-        while not self.stop(self.env):
-            self.newGeneration()
-            ext, post = lambda x: x['x'], lambda x: x / self.popSize
-            self.env['x'] = reducePop(self.population, ext, np.add, post, _t='reduce', **self.env)
-            self.compete(self.population, _t='compete', **self.env) 
-            evaluate(self.population, keyx='x', keyf='f', reEval='reEval', _t='evaluate', **self.env)
-        self.finish()
+    def runGeneration(self):
+        ext, post = lambda x: x['x'], lambda x: x / self.popSize
+        self.env['x'] = reducePop(self.population, ext, np.add, post, _t='reduce', **self.env)
+        self.compete(self.population, _t='compete', **self.env) 
+        evaluate(self.population, keyx='x', keyf='f', reEval='reEval', _t='evaluate', **self.env)

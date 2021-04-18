@@ -1,24 +1,32 @@
 import numpy as np
 import insectae as ins
 
+"""
 g = ins.toMin()
 m = ins.metrics(goal=g, verbose=200)
 t = ins.realTarget(metrics=m, target=lambda x: np.sum(np.square(x)), dimension=10, bounds=[-10, 10])
 s = ins.stopMaxGeneration(1000, metrics=m)
+"""
 
-bees = ins.beesAlgorithm(target=t, goal=g, stop=s, popSize=20, plNum=10, probScout=0.0001)
+m = ins.metrics(goal="max", verbose=200)
+t = ins.binaryTarget(metrics=m, target=lambda x: np.sum(x), dimension=100)
+s = ins.stopMaxGeneration(1000, metrics=m)
 
-#bees.opPlaceProbs = ins.uniformPlacesProbs
-bees.opPlaceProbs = ins.linearPlacesProbs(0.9)
+bees = ins.beesAlgorithm(target=t, goal="max", stop=s, popSize=20, beesNum=20, probScout=0.1)
+#bees.opProbs = ins.uniformPlacesProbs()
+#bees.opProbs = ins.linearPlacesProbs(0.9)
+bees.opProbs = ins.binaryPlacesProbs(0.5, 0.99)
 
-loc = ins.realMutation(ins.expCool(1, 0.99))
-glob = ins.randomRealVector()
-bees.opFlight = ins.beeFlight(loc, glob) 
+#bees.opLocal = ins.realMutation(ins.expCool(1, 0.99))
+#bees.opGlobal = ins.randomRealVector()
+
+bees.opLocal = ins.binaryMutation(ins.expCool(0.1, 0.99))
+bees.opGlobal = ins.randomBinaryVector()
 
 tm = ins.timer(m)
 bees.timer = tm
 
-bees()
+bees.run()
 
-m.showTiming()
+#m.showTiming()
 m.show(log=True)
