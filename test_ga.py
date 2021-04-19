@@ -6,13 +6,10 @@ m = ins.metrics(verbose=200)
 t = ins.realTarget(metrics=m, target=lambda x: np.sum(np.square(x)), dimension=10, bounds=[-10, 10])
 s = ins.stopMaxGeneration(1000, metrics=m)
 
-tm = ins.timer(m)
-
-ga = ins.geneticAlgorithm(target=t, stop=s, popSize=40, timer=tm)
-
-ga.flags.append("ranks")
+ga = ins.geneticAlgorithm(target=t, stop=s, popSize=40)
 
 ga.opSelect = ins.shuffled(ins.probOp(ins.tournament(pwin=0.9), 0.5))
+#ga.opSelect = ins.rankSelection(bounds=(1,2), alg=ga)
 #ga.opSelect = ins.selected(ins.probOp(ins.tournament(pwin=0.9), 0.5))
 x1 = ins.uniformCrossover(pswap=0.3)
 x2 = ins.singlePointCrossover()
@@ -50,6 +47,10 @@ ga.opMutate = ins.realMutation(delta=expRanks(0.0000000000001, 1))
 #ga.opMutate = ins.realMutation(delta=ins.expCool(0.5, 0.99))
 #ga.opMutate = ins.realMutation(delta=ins.hypCool(0.1, 0.25))
 #ga.opMutate = ins.binaryMutation(prob=ins.expCool(0.1, 0.99)) #ins.expCool(0.1, 0.99))
+
+#ins.decorate(ga, ins.rankIt())
+
+ins.decorate(ga, [ins.addElite(0.2), ins.timeIt(ins.timer(m)), ins.rankIt()]) 
 
 ga.run()
 

@@ -8,7 +8,7 @@ import copy
 class particleSwarmOptimization(algorithm):
     def __init__(self, **args):
         algorithm.__init__(self)
-        self.opLimitVel = None
+        self.opLimitVel = lambda ind, **xt: None
         self.alphabeta = None
         self.gamma = None
         self.delta = None
@@ -42,8 +42,7 @@ class particleSwarmOptimization(algorithm):
         post = lambda x: x[0]
         self.env['g'] = reducePop(self.population, ext, op, post, _t='reduce', **self.env)
         foreach(self.population, self.updateVel, _t='updatevel', **self.env)
-        if self.opLimitVel != None:
-            foreach(self.population, self.opLimitVel, key='v', _t='limitvel', **self.env)
+        foreach(self.population, self.opLimitVel, key='v', _t='limitvel', **self.env)
         foreach(self.population, simpleMove, keyx='x', keyv='v', dt=1.0, _t='move', **self.env)
         evaluate(self.population, keyx='x', keyf='fNew', _t='evaluate', **self.env)
         foreach(self.population, self.updateBestPosition, _t='updatebest', **self.env)

@@ -18,15 +18,18 @@ class algorithm:
         self.opInit = None
         self.env = None
         self.population = None
-        self.additionalProcedures = []
-        self.timer = None
-        self.flags = []
+        self.additionalProcedures = {'start':[],'enter':[], 'exit':[], 'finish':[]}
+        self.decorators = []
 
     def initAttributes(self, **args):
         self.__dict__.update(args)
 
-    def addProcedure(self, proc):
-        self.additionalProcedures.append(proc)
+    def addProcedure(self, key, proc):
+        self.additionalProcedures[key].append(proc)
+
+    def runAdds(self, key):
+        for proc in self.additionalProcedures[key]:
+            proc(self.population, **self.env)        
 
     def checkKey(self, k):
         if k[0] in '*&':
@@ -36,8 +39,6 @@ class algorithm:
         return k
 
     def start(self, envAttrs="", indAttrs="", shadows = ""):
-        if self.timer != None:
-            self.timer.startGlobal()
         self.goal = getGoal(self.goal)
         # environment
         keys = ["target", "goal", "time", "timer", "popSize", "_x", "_f"] + envAttrs.split()
@@ -50,35 +51,106 @@ class algorithm:
         keys = list(map(self.checkKey, indAttrs.split()))
         ind = dict(zip(keys, [None] * len(keys)))
         self.population = [ind.copy() for i in range(self.popSize)]
-        if "ranks" in self.flags:
-            for i in range(self.popSize):
-                self.population[i]["_rank"] = i 
-            self.additionalProcedures.append(sortPopulation)
         if self.opInit == None:
             self.opInit = self.target.defaultInit()
         # shadow populations
         for sh in shadows.split():
             self.__dict__[sh] = [ind.copy() for i in range(self.popSize)]
+        self.runAdds('start')
 
-    def startGeneration(self): 
+    def enter(self): 
         self.env['time'] += 1
-        for proc in self.additionalProcedures:
-            proc(self.population, **self.env)
-
-    def exit(self): 
-        if self.timer != None:
-            self.timer.stopGlobal()
+        self.runAdds('enter')
 
     def runGeneration(self): pass
-    def exitGeneration(self): pass
+
+    def exit(self): 
+        self.runAdds('exit')
+
+    def finish(self): 
+        self.runAdds('finish')
 
     def run(self):
         self.start()
         while not self.stop(self.env):
-            self.startGeneration()
+            self.enter()
             self.runGeneration()
-            self.exitGeneration()
-        self.exit()        
+            self.exit()
+        self.finish()        
+
+# Decorators
+
+def decorate(obj, D):
+    if not isinstance(D, list):
+        D = [D]
+    for d in D:
+        d(obj)
+
+class timeIt:
+    def __init__(self, timer):
+        self.timer = timer
+    def __call__(self, alg):
+        if "timeIt" in alg.decorators:
+            return
+        def start(population, **xt):
+            alg.env['timer'] = self.timer
+            self.timer.startGlobal()
+        def finish(population, **xt):
+            self.timer.stopGlobal()
+        alg.addProcedure('start', start)
+        alg.addProcedure('finish', finish)
+        alg.decorators.append("timeIt")
+
+class rankIt:
+    def __call__(self, alg):
+        if "rankIt" in alg.decorators:
+            return
+        def start(population, **xt):
+            for i in range(len(population)):
+                population[i]["_rank"] = i 
+        def enter(population, **xt):
+            keyf = xt['_f']
+            P = list(map(lambda x: x['_rank'], population))
+            if xt['goal'] == "min":
+                key = lambda x: population[x][keyf]
+            else:
+                key = lambda x: -population[x][keyf]
+            P.sort(key=key)
+            for i in range(len(population)):
+                population[P[i]]['_rank'] = i
+        alg.addProcedure('start', start)
+        alg.addProcedure('enter', enter)
+        alg.decorators.append("rankIt")
+
+class addElite:
+    def __init__(self, size=1):
+        self.size = size
+    def __call__(self, alg):
+        if "addElite" in alg.decorators:
+            return
+        def enter(population, **xt):
+            keyf = xt['_f']
+            keyx = xt['_x']
+            alg._elite = {}
+            n = len(population)
+            if isinstance(self.size, float):
+                self.size = int(self.size * n)
+            P = list(range(n))
+            for i in range(self.size):
+                for j in range(i + 1, n):
+                    if xt['goal'].isBetter(population[P[j]][keyf], population[P[i]][keyf]):
+                        P[i], P[j] = P[j], P[i]
+                alg._elite[P[i]] = {keyf:population[P[i]][keyf], keyx:population[P[i]][keyx].copy()}
+        def exit(population, **xt):
+            keyf = xt['_f']
+            keyx = xt['_x']
+            for i in alg._elite:
+                if xt['goal'].isBetter(alg._elite[i][keyf], population[i][keyf]):
+                    population[i][keyf] = alg._elite[i][keyf] 
+                    population[i][keyx] = alg._elite[i][keyx].copy() 
+        alg.addProcedure('enter', enter)
+        alg.addProcedure('exit', exit)
+        alg.decorators.append("addElite")
 
 # Common stuff
 
@@ -156,16 +228,5 @@ def simpleMove(ind, **xt):
     keyv = xt['keyv']
     dt = xt['dt']
     ind[keyx] += dt * ind[keyv]
-
-def sortPopulation(population, **xt):
-    keyf = xt['_f']
-    P = list(map(lambda x: x['_rank'], population))
-    if xt['goal'] == "min":
-        key = lambda x: population[x][keyf]
-    else:
-        key = lambda x: -population[x][keyf]
-    P.sort(key=key)
-    for i in range(len(population)):
-        population[P[i]]['_rank'] = i
 
 

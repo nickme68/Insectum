@@ -9,7 +9,7 @@ cso = ins.competitiveSwarmOptimizer(target=t, stop=s, popSize=40, delta=0.01)
 cso.socialFactor = 0.1
 
 tm = ins.timer(m)
-cso.timer = tm
+ins.decorate(cso, ins.timeIt(tm))
 
 cso.run()
 

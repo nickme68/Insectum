@@ -23,10 +23,10 @@ bees.opProbs = ins.binaryPlacesProbs(0.5, 0.99)
 bees.opLocal = ins.binaryMutation(ins.expCool(0.1, 0.99))
 bees.opGlobal = ins.randomBinaryVector()
 
-tm = ins.timer(m)
-bees.timer = tm
+ins.decorate(bees, ins.timeIt(ins.timer(m)))
 
+print(bees.additionalProcedures)
 bees.run()
 
-#m.showTiming()
+m.showTiming()
 m.show(log=True)

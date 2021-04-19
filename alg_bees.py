@@ -1,6 +1,6 @@
 import numpy as np
 from random import random
-from alg_base import algorithm
+from alg_base import algorithm, rankIt
 from patterns import foreach, evaluate, pop2ind
 
 class beesAlgorithm(algorithm):
@@ -13,7 +13,8 @@ class beesAlgorithm(algorithm):
         self.probScout = None
         self.opFly = None
         algorithm.initAttributes(self, **args)
-        self.flags.append("ranks")        
+        #self.flags.append("ranks")        
+        rankIt()(self)
 
     def start(self):
         algorithm.start(self, "", "&x *f")

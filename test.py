@@ -60,11 +60,5 @@ a.x = 2
 with a:
     a.y += "b"
 
-with geneticAlgorithm(pars) as ga:
-ga.selection = toyrms()
-
-
-with ga:
-    ga.run()
 
 

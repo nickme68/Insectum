@@ -20,7 +20,7 @@ bfoa.opSignals = ins.timedOp(ins.calcSignals(shape=ins.shapeClustering(0.00001))
 #bfoa.opSignals = ins.timedOp(ins.calcSignals(shape=ins.signalClustering(ins.expCool(0.001, 0.999), "min")), 10)
 
 tm = ins.timer(m)
-bfoa.timer = tm
+ins.decorate(bfoa, ins.timeIt(tm))
 
 bfoa.run()
 m.showTiming()

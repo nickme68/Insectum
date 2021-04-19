@@ -16,9 +16,10 @@ sa.theta=ins.hypCool(1.0, 1.0) #expCool(1.0, 0.99)
 #sa.opMove = ins.realMutation(delta=ins.hypCool(0.1, 0.07))
 sa.opMove = ins.binaryMutation(prob=0.01) 
 
-#tm = ins.timer(m)
-#sa.timer = tm
+tm = ins.timer(m)
+
+ins.decorate(sa, ins.timeIt(tm))
 
 sa.run()
 m.showTiming()
-m.show(log=True) 
+#m.show(log=True) 
