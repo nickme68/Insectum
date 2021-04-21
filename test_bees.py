@@ -12,10 +12,10 @@ m = ins.metrics(goal="max", verbose=200)
 t = ins.binaryTarget(metrics=m, target=lambda x: np.sum(x), dimension=100)
 s = ins.stopMaxGeneration(1000, metrics=m)
 
-bees = ins.beesAlgorithm(target=t, goal="max", stop=s, popSize=20, beesNum=20, probScout=0.1)
-#bees.opProbs = ins.uniformPlacesProbs()
-#bees.opProbs = ins.linearPlacesProbs(0.9)
-bees.opProbs = ins.binaryPlacesProbs(0.5, 0.99)
+bees = ins.beesAlgorithm(target=t, goal="max", stop=s, popSize=20, beesNum=20)
+#bees.opProbs = ins.uniformPlacesProbs(pscout=0.1)
+#bees.opProbs = ins.linearPlacesProbs(0.9, pscout=0.1)
+bees.opProbs = ins.binaryPlacesProbs(0.5, 0.9, pscout=0.1)
 
 #bees.opLocal = ins.realMutation(ins.expCool(1, 0.99))
 #bees.opGlobal = ins.randomRealVector()
@@ -25,8 +25,7 @@ bees.opGlobal = ins.randomBinaryVector()
 
 ins.decorate(bees, ins.timeIt(ins.timer(m)))
 
-print(bees.additionalProcedures)
 bees.run()
 
 m.showTiming()
-m.show(log=True)
+m.show()

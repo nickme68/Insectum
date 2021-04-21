@@ -13,9 +13,10 @@ pso.alphabeta= ins.linkedAlphaBeta(0.1) #(0.1, 0.1),
 
 tm = ins.timer(m)
 
-ins.decorate(pso, ins.timeIt(tm))
+#ins.decorate(pso, ins.timeIt(tm))
+ins.decorate(pso, [ins.timeIt(tm), ins.addElite(2)])
 pso.run()
 
-m.showTiming()
-#m.show(log=True)
+#m.showTiming()
+m.show(log=True)
 

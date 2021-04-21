@@ -27,7 +27,7 @@ class metrics:
             print(f"Generation: {g}, EFs: {e}, target: {b}")
         self.currentGeneration += 1
         self.data.append([])
-    def show(self, width=8, height=6, log=False):
+    def show(self, width=8, height=6, log=False, **args):
         B, A, M = [], [], []
         for rec in self.data:
             if rec == []:
@@ -47,6 +47,10 @@ class metrics:
         ax.legend()
         if log:
             ax.set_yscale('log')
+        bottom, top = plt.ylim()
+        if 'bottom' in args:
+            bottom = args['bottom']
+        plt.ylim(bottom, top)
         plt.show()
     def format(self, label, L, t, T):
         p = ""
@@ -89,7 +93,7 @@ class timer:
 
 def timing(f):
     def func(*x, **xt):
-        doTiming = '_t' in xt and xt['timer'] != None
+        doTiming = '_t' in xt and 'timer' in xt
         if doTiming:
             xt['timer'].startLocal()
         result = f(*x, **xt)

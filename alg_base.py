@@ -18,7 +18,7 @@ class algorithm:
         self.opInit = None
         self.env = None
         self.population = None
-        self.additionalProcedures = {'start':[],'enter':[], 'exit':[], 'finish':[]}
+        self.additionalProcedures = {'start':[], 'enter':[], 'exit':[], 'finish':[]}
         self.decorators = []
 
     def initAttributes(self, **args):
@@ -38,10 +38,18 @@ class algorithm:
             return k[1:]
         return k
 
-    def start(self, envAttrs="", indAttrs="", shadows = ""):
+    def run(self):
+        self.start()
+        while not self.stop(self.env):
+            self.enter()
+            self.runGeneration()
+            self.exit()
+        self.finish()        
+
+    def start(self, envAttrs="", indAttrs=""):
         self.goal = getGoal(self.goal)
         # environment
-        keys = ["target", "goal", "time", "timer", "popSize", "_x", "_f"] + envAttrs.split()
+        keys = ["target", "goal", "time", "popSize"] + envAttrs.split()
         self.env = dict(zip(keys, [None] * len(keys)))
         for key in keys:
             if key in self.__dict__:
@@ -53,9 +61,6 @@ class algorithm:
         self.population = [ind.copy() for i in range(self.popSize)]
         if self.opInit == None:
             self.opInit = self.target.defaultInit()
-        # shadow populations
-        for sh in shadows.split():
-            self.__dict__[sh] = [ind.copy() for i in range(self.popSize)]
         self.runAdds('start')
 
     def enter(self): 
@@ -69,14 +74,6 @@ class algorithm:
 
     def finish(self): 
         self.runAdds('finish')
-
-    def run(self):
-        self.start()
-        while not self.stop(self.env):
-            self.enter()
-            self.runGeneration()
-            self.exit()
-        self.finish()        
 
 # Decorators
 
@@ -130,7 +127,6 @@ class addElite:
             return
         def enter(population, **xt):
             keyf = xt['_f']
-            keyx = xt['_x']
             alg._elite = {}
             n = len(population)
             if isinstance(self.size, float):
@@ -140,14 +136,12 @@ class addElite:
                 for j in range(i + 1, n):
                     if xt['goal'].isBetter(population[P[j]][keyf], population[P[i]][keyf]):
                         P[i], P[j] = P[j], P[i]
-                alg._elite[P[i]] = {keyf:population[P[i]][keyf], keyx:population[P[i]][keyx].copy()}
+                alg._elite[P[i]] = copy.deepcopy(population[P[i]])
         def exit(population, **xt):
             keyf = xt['_f']
-            keyx = xt['_x']
             for i in alg._elite:
                 if xt['goal'].isBetter(alg._elite[i][keyf], population[i][keyf]):
-                    population[i][keyf] = alg._elite[i][keyf] 
-                    population[i][keyx] = alg._elite[i][keyx].copy() 
+                    population[i] = copy.deepcopy(alg._elite[i]) 
         alg.addProcedure('enter', enter)
         alg.addProcedure('exit', exit)
         alg.decorators.append("addElite")

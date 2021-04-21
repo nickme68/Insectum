@@ -45,20 +45,9 @@ a()
 
 """
 
-class A:
-    def __init__(self):
-        self.x = 1
+d = {'a':1, 'v':22}
 
-    def __enter__(self):
-        self.y = "a"
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        print(self.x, self.y)
-
-a = A()
-a.x = 2
-with a:
-    a.y += "b"
-
+if 'a' in d: print(d['a'])
+if 'b' in d: print(d['b'])
 
 

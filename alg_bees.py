@@ -10,17 +10,15 @@ class beesAlgorithm(algorithm):
         self.opLocal = None
         self.opGlobal = None
         self.opProbs = None
-        self.probScout = None
         self.opFly = None
         algorithm.initAttributes(self, **args)
-        #self.flags.append("ranks")        
         rankIt()(self)
 
     def start(self):
         algorithm.start(self, "", "&x *f")
         bee = {'x':None, 'f':None, '_rank':None}
         self.bees = [bee.copy() for i in range(self.beesNum)]
-        self.opFly = opFly(self.opProbs, self.opLocal, self.opGlobal, self.popSize, self.probScout)
+        self.opFly = opFly(self.opProbs, self.opLocal, self.opGlobal, self.popSize)
         foreach(self.population, self.opInit, key='x', **self.env)
         evaluate(self.population, keyx='x', keyf='f', **self.env)
 
@@ -37,10 +35,10 @@ class beesAlgorithm(algorithm):
         pop2ind(self.population, self.bees, self.updatePlace, _t='update', **self.env)
 
 class opFly:
-    def __init__(self, opProbs, opLocal, opGlobal, psize, pscout):
+    def __init__(self, opProbs, opLocal, opGlobal, psize):
         self.opLocal = opLocal
         self.opGlobal = opGlobal
-        self.probs = opProbs(psize, pscout)
+        self.probs = opProbs(psize)
     def __call__(self, bee, places, **xt):
         r = random()
         for pl in places:
@@ -56,28 +54,32 @@ class opFly:
             r -= pr
 
 class uniformPlacesProbs:
-    def __call__(self, size, pscout):
-        probs = np.full(size, (1 - pscout) / (size - 1) )
-        probs[size - 1] = pscout
+    def __init__(self, pscout):
+        self.pscout = pscout 
+    def __call__(self, size):
+        probs = np.full(size, (1 - self.pscout) / (size - 1) )
+        probs[size - 1] = self.pscout
         return probs
 
 class linearPlacesProbs:
-    def __init__(self, elitism):
+    def __init__(self, elitism, pscout):
         self.elitism = elitism
-    def __call__(self, size, pscout):
-        a = self.elitism * (1 - pscout) * 2 / ((size - 1) * (size - 2))
-        b = (1 - pscout) / (size - 1) + a * (size - 2) / 2
+        self.pscout = pscout
+    def __call__(self, size):
+        a = self.elitism * (1 - self.pscout) * 2 / ((size - 1) * (size - 2))
+        b = (1 - self.pscout) / (size - 1) + a * (size - 2) / 2
         probs = -a * np.array(range(size)) + b
-        probs[size - 1] = pscout
+        probs[size - 1] = self.pscout
         return probs
 
 class binaryPlacesProbs:
-    def __init__(self, rho, elitism):
+    def __init__(self, rho, elitism, pscout):
         self.rho = rho
         self.mu = 1 / (1 - elitism)
-    def __call__(self, size, pscout):
+        self.pscout = pscout
+    def __call__(self, size):
         me = int((size - 1) * self.rho)
         mo = size - 1 - me
-        pe = (1 - pscout) / (me + mo / self.mu)
+        pe = (1 - self.pscout) / (me + mo / self.mu)
         po = pe / self.mu
-        return np.array([pe] * me + [po] * mo + [pscout])
+        return np.array([pe] * me + [po] * mo + [self.pscout])

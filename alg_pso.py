@@ -33,6 +33,7 @@ class particleSwarmOptimization(algorithm):
         foreach(self.population, self.opInit, key='x', **self.env)
         foreach(self.population, copyAttribute, keyFrom='x', keyTo='p', **self.env)
         evaluate(self.population, keyx='x', keyf='f', **self.env)
+        foreach(self.population, copyAttribute, keyFrom='f', keyTo='fNew', **self.env)
         vel = self.delta * (self.target.bounds[1] - self.target.bounds[0])
         foreach(self.population, randomRealVector(-vel, vel), key='v', **self.env)
 

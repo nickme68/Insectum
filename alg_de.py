@@ -7,11 +7,11 @@ class differentialEvolution(algorithm):
         self.opMakeProbe = None
         self.opCrossover = None
         self.opSelect = None
-        self.probes = None
         algorithm.initAttributes(self, **args)
 
     def start(self):
-        algorithm.start(self, "", "&x *f", shadows="probes")
+        algorithm.start(self, "", "&x *f") 
+        self.probes = [{"x":None, "f":None} for i in range(self.popSize)]
         foreach(self.population, self.opInit, key='x', **self.env)
         evaluate(self.population, keyx='x', keyf='f', **self.env)
 
